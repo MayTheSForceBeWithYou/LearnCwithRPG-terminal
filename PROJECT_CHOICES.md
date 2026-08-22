@@ -87,7 +87,8 @@ Trade-off as presented: a party would teach array-of-structs management and make
 battles richer, but roughly doubles the complexity of every combat chapter, requires
 turn order across actors, per-member equipment/MP, and KO/revive handling — and would
 invalidate `CONTENT.md`'s single-hero stat model and level tables. Solo keeps the
-project under `DESIGN.md`'s ~3,500 line cap.
+project under `DESIGN.md`'s line cap (~3,500 at the time of this decision; raised to
+~5,000 on 2026-08-22).
 Impact: Chapters 15–18 target one hero. Progression is gated by key item and level,
 not party composition. Checkpoint D's class-system question is constrained — per
 `DESIGN.md` §6.3, options 2 and 3 (fixed classes / learn-anything) are only offered

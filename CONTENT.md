@@ -155,7 +155,7 @@ is by key item and by level.
 
 ### Scope guidance
 
-`DESIGN.md` caps the project near 3,500 lines. Content is the easiest thing to overrun.
+`DESIGN.md` caps the project near 5,000 lines. Content is the easiest thing to overrun.
 
 - **Core (must ship):** Grubbin Vale, Wetwood Barrow, Mudwick, The Sump, Castle Hollis,
   The Crownless Court. That is two fragments, three settlements, two dungeons, and a

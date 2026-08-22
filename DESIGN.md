@@ -455,8 +455,11 @@ src/
 └── data.h/.c       # content tables from disk              (ch 21)
 ```
 
-Keep the final program under ~3,500 lines. It must remain readable by the person who
+Keep the final program under ~5,000 lines. It must remain readable by the person who
 wrote it. If a chapter's design pushes past that, simplify the design, not the explanation.
+
+*(Raised from ~3,500 to ~5,000 on 2026-08-22 at the learner's instruction, with the
+game at 2,937 lines and four chapters remaining.)*
 
 ---
 

@@ -156,7 +156,7 @@ Applies to every line of C written anywhere in this repo.
 - 4-space indent, no tabs. ~90-column soft limit so code blocks don't wrap in markdown.
 - Include guards on every header.
 - Functions under ~50 lines. When one grows past that, split it and explain why in prose.
-- Total project stays under ~3,500 lines. If a design pushes past it, simplify the
+- Total project stays under ~5,000 lines. If a design pushes past it, simplify the
   design, not the explanation.
 
 ---
