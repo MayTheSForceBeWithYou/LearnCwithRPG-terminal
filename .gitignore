@@ -1,0 +1,5 @@
+# Compiled artifacts — every code/chNN/ snapshot is source only.
+code/*/hello
+code/*/game
+code/*/*.o
+*.o
