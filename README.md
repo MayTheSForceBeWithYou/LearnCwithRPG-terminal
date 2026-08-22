@@ -33,16 +33,18 @@ for WSL-specific gotchas.
 
 ## Status
 
-Chapters 0–14 written, each with a verified `code/chNN/` snapshot that
+Chapters 0–17 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
-AddressSanitizer/UBSan).
+AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
+suite -- currently 93,460 assertions covering combat maths, levelling,
+battle termination, inventory growth, and config parsing.
 
 Checkpoints A, B, and C are answered — terminal + ncurses; the world of
 *Some Assembly Required*, where a solo hero named Wick recovers four
 fragments of a shattered crown for an apologetic civil service; and
 AGI-sorted turn order with an FF1-style damage formula, encounters you can
-switch off, and difficulty tunable from a config file. Checkpoint D (Magic
-& Progression) is next, before Chapter 18. See `PROJECT_CHOICES.md` for the
+switch off, and difficulty tunable from a config file. Checkpoint D (Magic &
+Progression) is next, before Chapter 18. See `PROJECT_CHOICES.md` for the
 full ledger and `CONTENT.md` for the content bible.
 
 ## Chapter Index
