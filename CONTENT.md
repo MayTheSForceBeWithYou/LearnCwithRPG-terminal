@@ -18,11 +18,13 @@ game's data files; do not invent parallel content when a table here already cove
 | Checkpoint | Status |
 |---|---|
 | **B — World & Story** | ✅ Confirmed with the learner 2026-08-22. Setting, tone, hook, names, solo hero all adopted as written. |
-| **D — Magic & Progression** | ⚠️ Partly. Spell list and level table are fixed here. **Still ask** about MP pool vs. spell charges — §12 works either way and notes how. |
+| **D — Magic & Progression** | ✅ Answered 2026-08-22. MP pool chosen (use the §12 MP column directly; the FF1 charge variant is NOT built). Solo hero learns everything on schedule. Level and spell tables move to data files in ch21. |
 
 Checkpoint A: ✅ answered 2026-08-22 (ncurses, no prior C, thorough pacing).
 Checkpoint C: ✅ answered 2026-08-22 — see `PROJECT_CHOICES.md`. Two deviations from
 §9: encounters gain an **off toggle**, and difficulty is **tunable via a config file**.
+Checkpoint D: ✅ answered 2026-08-22 — MP pool, learn-everything, tables move to data
+files in ch21.
 Checkpoints E and F are untouched. Ask them as specified.
 
 **Placeholder policy:** every proper noun here is a default, not a mandate. If the
@@ -381,14 +383,11 @@ menu, several pages long, and let the player notice the inconsistencies unprompt
 
 Solo hero learns everything on the level table below.
 
-### Checkpoint D dependency
+### Checkpoint D dependency — RESOLVED 2026-08-22
 
-These work under either magic system:
-
-- **MP pool (recommended default):** use the MP column directly.
-- **FF1-style charges:** group by tier (Lv column ÷ 4, rounded up) and grant charges per
-  tier instead. The 2D charge array is a genuinely nice teaching artefact if the learner
-  wants it. Note this trade-off when asking.
+**MP pool chosen.** Use the MP column below directly. The FF1-style per-tier charge
+variant was offered and declined, so the 2D charge array is not built; if a later
+chapter wants to teach 2D arrays it needs a different vehicle.
 
 | Spell | Lv | MP | Effect |
 |---|---|---|---|
@@ -567,7 +566,8 @@ Do not decide these here. Ask at the specified checkpoints.
   damage formula adopted as written. Two deviations: encounters gain an **off
   toggle**, and difficulty is **tunable via a config file** (`encounters`,
   `enemy_damage`, `xp_rate`, `gold_loss_on_death`). See `PROJECT_CHOICES.md`.
-- **Checkpoint D** — MP pool vs. spell charges. See §12.
+- ~~**Checkpoint D**~~ — ✅ Answered 2026-08-22. MP pool (not charges); solo hero learns
+  every spell on schedule; level and spell tables move to data files in ch21.
 - **Checkpoint E** — save format.
 - **Checkpoint F** — Vex's fate (self-unmaking vs. put down), which optional dungeons
   ship, stretch goals, packaging.

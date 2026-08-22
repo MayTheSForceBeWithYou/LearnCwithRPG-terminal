@@ -166,7 +166,46 @@ and Chapter 13's table-driven lookup rather than introducing a new technique.
 
 ## Checkpoint D — Magic & Progression *(before Chapter 18)*
 
-**Status:** Not reached.
+**Status:** Answered 2026-08-22.
+
+**Q1: Magic resource?**
+Options: single MP pool (default) / FF1-style per-level spell charges / per-spell
+cooldowns.
+**Chosen: a single MP pool.**
+`CONTENT.md` §12's MP column is used directly — Mend costs 3, Sunder costs 30.
+Impact: `Player` already carries `mp`/`max_mp` from Chapter 16, so Chapter 18 spends
+from it and needs no new resource machinery. The `Bottled Vim` item already in the
+Chapter 17 inventory (restore 20 MP) becomes meaningful rather than vestigial. Inns
+restore MP as well as HP when Chapter 19 builds them. The 2D charge array that
+`CONTENT.md` flagged as "a genuinely nice teaching artefact" is **not** built — if a
+later chapter wants to teach 2D arrays, it needs a different vehicle.
+
+**Q2: Class system?**
+`DESIGN.md` §6.3 constrains this: options 2 and 3 (fixed classes / learn-anything) are
+only offered when a party was chosen at Checkpoint B, and Checkpoint B chose a solo
+hero. The question was therefore reframed as "does the lone hero specialise?"
+Options offered: learns everything on schedule / chooses a focus partway through.
+**Chosen: learns everything on schedule.**
+Matches `CONTENT.md` §12's "solo hero learns everything on the level table". Impact:
+no branching progression, no risk of a player locking themselves out, and every
+playthrough sees all thirteen spells. Spell acquisition is driven purely by level.
+
+**Q3: Levelling curve?**
+Options: table-driven from a data file (default) / keep as C tables / formula-driven.
+**Chosen: table-driven from data files.**
+Impact: the level table currently lives as a hardcoded `static const LevelRow
+level_table[]` in `party.c` (added Chapter 16), and the spell table will be added the
+same way in Chapter 18. **Both move to `assets/` in Chapter 21**, parsed with the
+Chapter 11 file-I/O techniques and validated the same way — never trust a file on
+disk. This matters concretely: Chapter 16's simulation showed the curve needs
+playtesting, and a data file means retuning without a rebuild.
+
+Sequencing agreed at this checkpoint:
+- **Chapter 18** builds spells as a C table of function-pointer effects. `CONTENT.md`
+  §12 explicitly asks for this rather than a `switch`, calling it "the payoff for
+  Chapter 14's dispatch-table lesson — call it back explicitly."
+- **Chapter 21** moves the level table *and* the spell table out to `assets/`,
+  keeping the same in-memory shapes so nothing above the loader changes.
 
 ---
 

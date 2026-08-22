@@ -39,13 +39,14 @@ AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
 suite -- currently 93,460 assertions covering combat maths, levelling,
 battle termination, inventory growth, and config parsing.
 
-Checkpoints A, B, and C are answered — terminal + ncurses; the world of
+Checkpoints A through D are answered — terminal + ncurses; the world of
 *Some Assembly Required*, where a solo hero named Wick recovers four
 fragments of a shattered crown for an apologetic civil service; and
 AGI-sorted turn order with an FF1-style damage formula, encounters you can
-switch off, and difficulty tunable from a config file. Checkpoint D (Magic &
-Progression) is next, before Chapter 18. See `PROJECT_CHOICES.md` for the
-full ledger and `CONTENT.md` for the content bible.
+switch off, difficulty tunable from a config file, and magic paid for from
+a single MP pool. Checkpoint E (Save Format) is next, before Chapter 20.
+See `PROJECT_CHOICES.md` for the full ledger and `CONTENT.md` for the
+content bible.
 
 ## Chapter Index
 
