@@ -65,6 +65,10 @@ static void draw_area(const World *world, const Player *player,
         for (int i = 0; i < dialog->line_count; i++) {
             render_draw_text(1, VIEW_HEIGHT + 1 + i, dialog->lines[i]);
         }
+        if (dialog->more) {
+            render_draw_text(1, VIEW_HEIGHT + 1 + DIALOG_MAX_LINES,
+                             "-- more --");
+        }
     } else {
         render_draw_text(0, VIEW_HEIGHT + 1,
                          "w/a/s/d move, q quit");
@@ -144,7 +148,7 @@ int main(void)
 
                     const Npc *npc = world_npc_at(world, target_x, target_y);
                     if (npc != NULL) {
-                        dialog_wrap(&dialog, npc->speech, TEXTBOX_WIDTH);
+                        dialog_start(&dialog, npc->speech, TEXTBOX_WIDTH);
                         mode = MODE_DIALOG;
                     } else if (map_is_walkable(map, target_x, target_y)) {
                         entity_move(&player, dx, dy);
@@ -162,9 +166,11 @@ int main(void)
             }
 
             case MODE_DIALOG:
-                /* Any key dismisses the text box. */
+                /* Any key turns the page; the last page ends the talk. */
                 if (event != INPUT_NONE) {
-                    mode = MODE_EXPLORE;
+                    if (!dialog_advance(&dialog)) {
+                        mode = MODE_EXPLORE;
+                    }
                 }
                 break;
         }

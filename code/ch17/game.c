@@ -139,7 +139,7 @@ static void explore_handle(Game *game, InputEvent event)
 
     const Npc *npc = world_npc_at(game->world, target_x, target_y);
     if (npc != NULL) {
-        dialog_wrap(&game->dialog, npc->speech, TEXTBOX_WIDTH);
+        dialog_start(&game->dialog, npc->speech, TEXTBOX_WIDTH);
         game->mode = MODE_DIALOG;
         return;
     }
@@ -170,6 +170,11 @@ static void dialog_draw(const Game *game)
     for (int i = 0; i < game->dialog.line_count; i++) {
         render_draw_text(1, VIEW_HEIGHT + 1 + i, game->dialog.lines[i]);
     }
+
+    /* Tell the player there is more to read, rather than just stopping. */
+    if (game->dialog.more) {
+        render_draw_text(1, VIEW_HEIGHT + 1 + DIALOG_MAX_LINES, "-- more --");
+    }
 }
 
 static void dialog_handle(Game *game, InputEvent event)
@@ -179,8 +184,11 @@ static void dialog_handle(Game *game, InputEvent event)
         return;
     }
 
+    /* Any key turns the page; the last page ends the conversation. */
     if (event != INPUT_NONE) {
-        game->mode = MODE_EXPLORE;
+        if (!dialog_advance(&game->dialog)) {
+            game->mode = MODE_EXPLORE;
+        }
     }
 }
 

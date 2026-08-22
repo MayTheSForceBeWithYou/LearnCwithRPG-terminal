@@ -6,6 +6,7 @@
 #include "entity.h"
 #include "inventory.h"
 #include "config.h"
+#include "dialog.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -623,6 +624,103 @@ static void test_config(void)
     }
 }
 
+
+static void test_dialog_paging_loses_nothing(void)
+{
+    printf("dialog paging preserves all text\n");
+
+    /* Every speech actually shipped in the game. If any of these ever
+       stops round-tripping, an NPC is being cut off mid-sentence -- which
+       is exactly the bug a playtest caught after this course first
+       shipped chapter 12 with a hard four-line cap and no paging. */
+    static const char *speeches[] = {
+        "Bed's six gold. Sleep fixes most things, in my experience. "
+        "Not everything. Most.",
+        "Four pieces. Scattered north, south, and -- the other two "
+        "directions. I had it written down.",
+        "The Guild is prepared to offer forty gold up front and a "
+        "completion bonus that I'd rather not describe as generous. "
+        "Eleven others declined.",
+        "Something got into the turnips. Not a fox. Foxes don't do "
+        "that to a fence.",
+        "Sorry -- is this about the vault inventory? It's not ready. "
+        "It's been eleven years and it's not ready.",
+        "Everything's twice what it was. That's not me gouging. "
+        "That's the roads."
+    };
+    int speech_count = (int)(sizeof speeches / sizeof speeches[0]);
+
+    for (int s = 0; s < speech_count; s++) {
+        const char *text = speeches[s];
+        size_t source_pos = 0;
+        size_t source_len = strlen(text);
+        int pages = 0;
+
+        Dialog d;
+        dialog_start(&d, text, 18);
+
+        do {
+            pages++;
+            CHECK(pages <= 20);          /* never loop forever */
+
+            for (int i = 0; i < d.line_count; i++) {
+                size_t line_len = strlen(d.lines[i]);
+
+                CHECK(line_len <= 18);   /* never exceeds the width */
+                CHECK(line_len < DIALOG_LINE_LEN);
+
+                /* Compare ignoring whitespace on both sides: wrapping
+                   legitimately moves spaces around, but must never lose,
+                   duplicate or reorder a printable character. */
+                for (size_t c = 0; c < line_len; c++) {
+                    if (d.lines[i][c] == ' ') {
+                        continue;
+                    }
+                    while (source_pos < source_len && text[source_pos] == ' ') {
+                        source_pos++;
+                    }
+                    CHECK(source_pos < source_len);
+                    if (source_pos < source_len) {
+                        CHECK(text[source_pos] == d.lines[i][c]);
+                    }
+                    source_pos++;
+                }
+            }
+        } while (dialog_advance(&d));
+
+        /* Only trailing spaces may remain: nothing was dropped. */
+        while (source_pos < source_len && text[source_pos] == ' ') {
+            source_pos++;
+        }
+        CHECK_EQ((int)source_pos, (int)source_len);
+        CHECK(pages >= 1);
+        CHECK(pages >= 1);
+    }
+
+    /* Edge cases must not hang or misreport. */
+    Dialog d;
+    dialog_start(&d, "", 18);
+    CHECK_EQ(d.line_count, 0);
+    CHECK_EQ(d.more, 0);
+    CHECK_EQ(dialog_advance(&d), 0);
+
+    dialog_start(&d, NULL, 18);
+    CHECK_EQ(d.line_count, 0);
+    CHECK_EQ(dialog_advance(&d), 0);
+
+    dialog_start(&d, "short", 18);
+    CHECK_EQ(d.line_count, 1);
+    CHECK_EQ(d.more, 0);
+
+    /* A single word longer than the whole box must still terminate. */
+    dialog_start(&d, "Supercalifragilisticexpialidociousness rides", 10);
+    int guard = 0;
+    do {
+        guard++;
+    } while (dialog_advance(&d) && guard < 50);
+    CHECK(guard < 50);
+}
+
 int main(void)
 {
     test_base_damage();
@@ -644,6 +742,7 @@ int main(void)
     test_inventory_removal();
     test_inventory_many_items();
     test_config();
+    test_dialog_paging_loses_nothing();
 
     return test_report();
 }

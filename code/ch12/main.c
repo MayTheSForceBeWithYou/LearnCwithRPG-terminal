@@ -16,6 +16,11 @@ static void draw_textbox(const Dialog *dialog)
     for (int i = 0; i < dialog->line_count; i++) {
         render_draw_text(1, top + i, dialog->lines[i]);
     }
+
+    /* Tell the player there is more to read, rather than just stopping. */
+    if (dialog->more) {
+        render_draw_text(1, top + DIALOG_MAX_LINES, "-- more --");
+    }
 }
 
 static void draw_world(const Map *map, const Player *player,
@@ -80,7 +85,7 @@ int main(void)
     };
 
     Dialog dialog;
-    dialog_wrap(&dialog, gatekeeper.speech, TEXTBOX_WIDTH);
+    dialog_start(&dialog, gatekeeper.speech, TEXTBOX_WIDTH);
 
     printf("\n");
     printf("The village gate creaks open. Press Enter to step through...\n");
@@ -103,6 +108,17 @@ int main(void)
 
         event = input_poll();
 
+        if (talking) {
+            /* Any key turns the page; the conversation ends when there
+               is nothing left to show. */
+            if (event != INPUT_NONE && event != INPUT_QUIT) {
+                if (!dialog_advance(&dialog)) {
+                    talking = 0;
+                }
+            }
+            continue;
+        }
+
         int dx = 0;
         int dy = 0;
 
@@ -121,6 +137,7 @@ int main(void)
 
             if (target_x == gatekeeper.x && target_y == gatekeeper.y) {
                 /* Walking into someone starts a conversation instead. */
+                dialog_start(&dialog, gatekeeper.speech, TEXTBOX_WIDTH);
                 talking = 1;
             } else if (map_is_walkable(map, target_x, target_y)) {
                 talking = 0;

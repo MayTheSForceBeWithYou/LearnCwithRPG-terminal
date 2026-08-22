@@ -229,62 +229,59 @@ typedef struct {
     int line_count;
 } Dialog;
 
-/* Word-wraps text into dialog->lines, breaking at spaces where possible.
-   Never writes more than DIALOG_LINE_LEN - 1 characters plus a NUL into
-   any line, and never fills more than DIALOG_MAX_LINES lines; text that
-   does not fit is dropped. width is clamped to the line capacity. */
-void dialog_wrap(Dialog *dialog, const char *text, int width);
+/* Begins a conversation and produces the first page. Word-wraps at
+   spaces where possible; never writes more than DIALOG_LINE_LEN - 1
+   characters plus a NUL into a line, and never fills more than
+   DIALOG_MAX_LINES lines. width is clamped to the line capacity. */
+void dialog_start(Dialog *dialog, const char *text, int width);
+
+/* Produces the next page. Returns 1 if there was more to show, 0 if the
+   conversation is over (in which case the dialog is left empty). */
+int dialog_advance(Dialog *dialog);
 
 #endif
 ```
 
-The comment states the guarantees precisely, including the unflattering
-one — text beyond four lines is **dropped**. Saying so is better than a
-caller discovering it. (Fixing it properly means paging, which is an
-exercise.)
+Four lines is a deliberate limit — a text box that fills the screen stops
+being a text box. But a speech longer than four lines must not simply
+vanish, so the `Dialog` remembers where it stopped and hands out the rest
+one page at a time.
 
-`dialog.c`:
+That is what `pos`, `source` and `more` are for. `source` is a pointer the
+`Dialog` does **not** own: the caller has to keep that text alive for as
+long as the conversation is on screen. String literals and entries in a
+static table qualify; a local buffer would not, and that is worth the
+comment in the header.
+
+`dialog.c` — the wrapping happens in one static helper that fills a single
+page and remembers where it stopped:
 
 ```c
-#include <string.h>
-#include "dialog.h"
-
-void dialog_wrap(Dialog *dialog, const char *text, int width)
+static int fill_page(Dialog *dialog)
 {
+    const char *text = dialog->source;
+    size_t len = strlen(text);
+    int width = dialog->width;
+
     dialog->line_count = 0;
 
-    if (text == NULL) {
-        return;
-    }
-
-    /* Never allow a caller to ask for more than a line can hold. */
-    if (width > DIALOG_LINE_LEN - 1) {
-        width = DIALOG_LINE_LEN - 1;
-    }
-    if (width < 1) {
-        width = 1;
-    }
-
-    size_t pos = 0;
-    size_t len = strlen(text);
-
-    while (pos < len && dialog->line_count < DIALOG_MAX_LINES) {
+    while (dialog->pos < len && dialog->line_count < DIALOG_MAX_LINES) {
         /* Skip any spaces that would otherwise start a line. */
-        while (text[pos] == ' ') {
-            pos++;
+        while (text[dialog->pos] == ' ') {
+            dialog->pos++;
         }
-        if (pos >= len) {
+        if (dialog->pos >= len) {
             break;
         }
 
         /* How much of the remaining text could fit on one line? */
-        size_t remaining = len - pos;
+        size_t remaining = len - dialog->pos;
         size_t take = remaining < (size_t)width ? remaining : (size_t)width;
 
         /* If we are cutting mid-word, back up to the last space. */
-        if (take < remaining && text[pos + take] != ' ') {
+        if (take < remaining && text[dialog->pos + take] != ' ') {
             size_t back = take;
-            while (back > 0 && text[pos + back - 1] != ' ') {
+            while (back > 0 && text[dialog->pos + back - 1] != ' ') {
                 back--;
             }
             /* back == 0 means a single word longer than the line, which
@@ -296,16 +293,65 @@ void dialog_wrap(Dialog *dialog, const char *text, int width)
 
         /* Drop the trailing space, if the break landed on one. */
         size_t copy = take;
-        while (copy > 0 && text[pos + copy - 1] == ' ') {
+        while (copy > 0 && text[dialog->pos + copy - 1] == ' ') {
             copy--;
         }
 
-        memcpy(dialog->lines[dialog->line_count], text + pos, copy);
+        memcpy(dialog->lines[dialog->line_count], text + dialog->pos, copy);
         dialog->lines[dialog->line_count][copy] = '\0';
         dialog->line_count++;
 
-        pos += take;
+        dialog->pos += take;
     }
+
+    /* Anything left but trailing spaces means there is another page. */
+    size_t look = dialog->pos;
+    while (look < len && text[look] == ' ') {
+        look++;
+    }
+    dialog->more = (look < len);
+
+    return dialog->line_count;
+}
+```
+
+The two public functions are thin wrappers around it:
+
+```c
+void dialog_start(Dialog *dialog, const char *text, int width)
+{
+    dialog->line_count = 0;
+    dialog->pos = 0;
+    dialog->more = 0;
+    dialog->source = text;
+
+    if (text == NULL) {
+        dialog->width = 1;
+        return;
+    }
+
+    /* Never allow a caller to ask for more than a line can hold. */
+    if (width > DIALOG_LINE_LEN - 1) {
+        width = DIALOG_LINE_LEN - 1;
+    }
+    if (width < 1) {
+        width = 1;
+    }
+    dialog->width = width;
+
+    fill_page(dialog);
+}
+
+int dialog_advance(Dialog *dialog)
+{
+    if (dialog->source == NULL || !dialog->more) {
+        dialog->line_count = 0;
+        dialog->more = 0;
+        return 0;
+    }
+
+    fill_page(dialog);
+    return 1;
 }
 ```
 
@@ -321,6 +367,11 @@ Every line of defensive code here exists because of a specific failure:
 - **Writing the NUL explicitly** after `memcpy` is what makes each line a
   real string. `memcpy` doesn't add one; skipping this leaves
   `render_draw_text` reading off the end.
+- **`pos` lives on the struct, not in a local.** That single decision is
+  what turns "wrap this text" into "wrap this text a page at a time" —
+  the function can stop at four lines and resume exactly where it left
+  off, because where it left off is stored somewhere that outlives the
+  call.
 - **`width < 1`** guards against a zero or negative width producing a
   zero-length slice and, again, an infinite loop.
 
@@ -363,7 +414,7 @@ Npc gatekeeper = {
 };
 
 Dialog dialog;
-dialog_wrap(&dialog, gatekeeper.speech, TEXTBOX_WIDTH);
+dialog.line_count = 0;
 ```
 
 Two things worth noting. The `.x = 4` syntax is a **designated
@@ -373,7 +424,8 @@ reorders the struct. And the two adjacent string literals on separate
 lines are automatically concatenated by the compiler into one string,
 which is how you write long text without absurdly long source lines.
 
-Draw the text box when talking:
+Draw the text box when talking, including a marker when there is more to
+read:
 
 ```c
 static void draw_textbox(const Dialog *dialog)
@@ -383,23 +435,39 @@ static void draw_textbox(const Dialog *dialog)
     for (int i = 0; i < dialog->line_count; i++) {
         render_draw_text(1, top + i, dialog->lines[i]);
     }
+
+    /* Tell the player there is more to read, rather than just stopping. */
+    if (dialog->more) {
+        render_draw_text(1, top + DIALOG_MAX_LINES, "-- more --");
+    }
 }
 ```
 
-And make walking into the NPC start a conversation instead of a move:
+Make walking into the NPC start a conversation instead of a move:
 
 ```c
-if (dx != 0 || dy != 0) {
-    int target_x = player.x + dx;
-    int target_y = player.y + dy;
+if (target_x == gatekeeper.x && target_y == gatekeeper.y) {
+    /* Walking into someone starts a conversation instead. */
+    dialog_start(&dialog, gatekeeper.speech, TEXTBOX_WIDTH);
+    talking = 1;
+} else if (map_is_walkable(map, target_x, target_y)) {
+    talking = 0;
+    entity_move(&player, dx, dy);
+}
+```
 
-    if (target_x == gatekeeper.x && target_y == gatekeeper.y) {
-        /* Walking into someone starts a conversation instead. */
-        talking = 1;
-    } else if (map_is_walkable(map, target_x, target_y)) {
-        talking = 0;
-        entity_move(&player, dx, dy);
+And while talking, a keypress turns the page rather than moving the hero:
+
+```c
+if (talking) {
+    /* Any key turns the page; the conversation ends when there
+       is nothing left to show. */
+    if (event != INPUT_NONE && event != INPUT_QUIT) {
+        if (!dialog_advance(&dialog)) {
+            talking = 0;
+        }
     }
+    continue;
 }
 ```
 
@@ -432,7 +500,8 @@ w/a/s/d to move, q to quit wandering
 ```
 
 Walk into them (`d` three times) and the text box appears, wrapped to
-width 18 with no word split across lines:
+width 18 with no word split across lines. This speech happens to fit in
+one page, so there is no `-- more --`:
 
 ```
 ####################
@@ -466,12 +535,30 @@ than most.
 
 ## What just happened
 
-`dialog_wrap` walked the speech once, slicing it into four NUL-terminated
-lines inside the `Dialog` struct. No allocation was involved — the lines
-are fixed-size arrays *inside* the struct, so the whole thing lives on the
-stack in `main` and dies when `main` returns. That's a deliberate choice:
-bounded text with a known maximum doesn't need the heap, and not using the
-heap means nothing to leak.
+`dialog_start` walked the speech far enough to fill four NUL-terminated
+lines inside the `Dialog` struct, then stopped and recorded where it got
+to. No allocation was involved — the lines are fixed-size arrays *inside*
+the struct, so the whole thing lives on the stack in `main` and dies when
+`main` returns. That's a deliberate choice: bounded text with a known
+maximum doesn't need the heap, and not using the heap means nothing to
+leak.
+
+For a longer speech, `dialog_advance` picks up from `pos` and fills the
+same four lines again:
+
+```
+  source (not owned, must outlive the Dialog)
+  "Bed's six gold. Sleep fixes most things, in my experience. Not everything. Most."
+                                                              ^
+                                                            pos after page 1
+
+  page 1                          page 2 (after dialog_advance)
+  |Bed's six gold.  |             |everything. Most.|
+  |Sleep fixes most |             |                 |
+  |things, in my    |             |                 |
+  |experience. Not  |             |                 |
+  more = 1                        more = 0
+```
 
 ```
   gatekeeper.speech (a string literal, read-only)
@@ -540,14 +627,16 @@ value when it matters.
 
 1. Change `DIALOG_LINE_LEN` to `12` but leave `TEXTBOX_WIDTH` alone.
    What happens to the text box, and why doesn't it overflow? (Trace which
-   clamp in `dialog_wrap` saves you.)
-2. Give the gatekeeper a much longer speech — five or six sentences.
-   What happens to the text beyond four lines? Is the failure visible to
-   the player, and is that acceptable?
-3. Implement paging: add a `dialog_next_page` function so long speeches
-   show four lines at a time and advance when the player presses a key.
-   (Hint: `dialog_wrap` currently starts at `pos = 0` every time; you'll
-   need to remember where the previous page stopped.)
+   clamp in `dialog_start` saves you.)
+2. Give the gatekeeper a much longer speech — five or six sentences — and
+   read it all the way through. How many pages does it take? Now write a
+   test that proves **no text is lost**: page through a speech collecting
+   every line, and compare the result word-by-word against the original.
+3. `dialog_advance` returns `0` when the conversation is over, and the
+   caller uses that to leave dialog mode. What happens if you ignore the
+   return value and always stay in dialog mode? Try it, then explain why
+   returning a value the caller must act on is better here than the
+   `Dialog` silently resetting itself.
 4. *Open-ended:* NPC speech is currently a string literal compiled into
    the program — exactly the problem Chapter 11 solved for maps. Sketch a
    file format for dialogue. What has to go in it besides the text itself,
@@ -558,57 +647,43 @@ value when it matters.
 <summary>Solutions</summary>
 
 1. `TEXTBOX_WIDTH` is `VIEW_WIDTH - 2` = 18, but `DIALOG_LINE_LEN - 1` is
-   now 11, so the first clamp in `dialog_wrap` reduces `width` to 11.
+   now 11, so the first clamp in `dialog_start` reduces `width` to 11.
    Lines wrap much more narrowly than the box allows — visually worse,
    but perfectly safe. That clamp is doing exactly the job it was written
    for: the module refuses to write more than its own buffers hold,
    regardless of what the caller asks for. Had it trusted `width`, this
    change would have written 18 bytes into 12-byte lines.
 
-2. Everything past the fourth line is silently dropped — the player sees a
-   speech that stops mid-thought with no indication there was more. It's
-   not acceptable for real dialogue, which is why exercise 3 exists. It
-   *is* acceptable as an intermediate state, as long as it's documented
-   (which `dialog.h`'s comment does) rather than discovered later.
-
-3. The core change is tracking a read position across calls:
+2. A six-sentence speech takes two or three pages at width 18. The
+   round-trip test is the valuable part:
    ```c
-   typedef struct {
-       char lines[DIALOG_MAX_LINES][DIALOG_LINE_LEN];
-       int line_count;
-       const char *source;
-       size_t pos;          /* where the next page starts */
-       int width;
-   } Dialog;
-
-   void dialog_start(Dialog *d, const char *text, int width);
-   int  dialog_next_page(Dialog *d);   /* 1 if a page was produced */
+   char rebuilt[2048] = {0};
+   Dialog d;
+   dialog_start(&d, text, 18);
+   do {
+       for (int i = 0; i < d.line_count; i++) {
+           strcat(rebuilt, d.lines[i]);
+           strcat(rebuilt, " ");
+       }
+   } while (dialog_advance(&d));
+   /* then compare rebuilt against text, token by token */
    ```
-   `dialog_start` stores `source`, `width`, and sets `pos = 0`;
-   `dialog_next_page` runs the existing wrap loop starting from `d->pos`,
-   leaves `pos` where it stopped, and returns `0` when there's nothing
-   left. `main` then calls `dialog_next_page` on each keypress while
-   talking, and ends the conversation when it returns `0`. Note the
-   `Dialog` now holds a pointer to text it does not own — worth a comment
-   saying the caller must keep that text alive, which for a string literal
-   is automatic.
+   Comparing *tokens* rather than raw strings is what makes this work,
+   since wrapping legitimately changes where the spaces are. This exact
+   test is what proved the paging correct for every speech in the game —
+   and an earlier version of this course shipped without it and silently
+   truncated all six NPC speeches.
 
-4. No fixed answer. Beyond the text, a dialogue file needs at minimum an
-   **identifier** per entry so an NPC can reference one, and to support
-   conditional speech it needs some notion of **state** — a flag or quest
-   step the line depends on. A plausible sketch:
-   ```
-   [gatekeeper.default]
-   Careful out there. The roads have not been safe for a long while now.
+3. The conversation never ends: the last page stays on screen and every
+   keypress re-runs `dialog_advance`, which keeps returning `0` and
+   clearing `line_count` — so you get an empty box you cannot escape
+   except by quitting. Returning a value is better than self-resetting
+   because *the caller owns the mode*. `dialog.c` has no idea `MODE_DIALOG`
+   exists and shouldn't; its job is to answer "was there more?" and let
+   `game.c` decide what that means. A module that reached out and changed
+   the game's mode would be exactly the coupling Chapter 8's renderer
+   abstraction was built to avoid.
 
-   [gatekeeper.after_first_fragment]
-   You found one? Then the stories were true after all.
-   ```
-   That bracketed-section shape is essentially INI, and parsing it is
-   Chapter 21's territory. The real design question you're being nudged
-   toward: who decides which entry is current — the NPC, or the game
-   state? (Usually the game state, which is why Chapter 14's state
-   machines come first.)
 
 </details>
 

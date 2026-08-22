@@ -9,7 +9,7 @@ TARGET = game
 
 # The test runner links only the pure modules -- no ncurses, no game
 # loop. That is a direct benefit of keeping the maths free of the world.
-TEST_SOURCES = test_combat.c combat_math.c rng.c party.c battle.c inventory.c config.c
+TEST_SOURCES = test_combat.c combat_math.c rng.c party.c battle.c inventory.c config.c dialog.c
 TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 TEST_TARGET = run_tests
 
