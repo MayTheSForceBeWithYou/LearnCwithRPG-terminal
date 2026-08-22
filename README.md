@@ -33,8 +33,15 @@ for WSL-specific gotchas.
 
 ## Status
 
-Checkpoint A answered (terminal + ncurses, no prior C experience, thorough
-pacing). Chapter 0 is next. See `PROJECT_CHOICES.md` for the full ledger.
+Chapters 0–12 written, each with a verified `code/chNN/` snapshot that
+compiles warning-free (and, from Chapter 10 on, runs clean under
+AddressSanitizer/UBSan).
+
+Checkpoints A and B are answered — terminal + ncurses, and the world of
+*Some Assembly Required*: a solo hero named Wick recovering four fragments
+of a shattered crown for an apologetic civil service. Checkpoint C (Combat
+Design) is next, before Chapter 15. See `PROJECT_CHOICES.md` for the full
+ledger and `CONTENT.md` for the content bible.
 
 ## Chapter Index
 
