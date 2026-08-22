@@ -33,11 +33,12 @@ for WSL-specific gotchas.
 
 ## Status
 
-Chapters 0–17 written, each with a verified `code/chNN/` snapshot that
+Chapters 0–19 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
 AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
-suite -- currently 93,460 assertions covering combat maths, levelling,
-battle termination, inventory growth, and config parsing.
+suite -- currently 101,163 assertions covering combat maths, levelling,
+battle termination, inventory growth, config parsing, spells, equipment,
+and shop transactions.
 
 Checkpoints A through D are answered — terminal + ncurses; the world of
 *Some Assembly Required*, where a solo hero named Wick recovers four
