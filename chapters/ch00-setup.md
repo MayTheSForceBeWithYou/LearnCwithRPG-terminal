@@ -163,13 +163,14 @@ flags this whole course uses — works. That's the goal for today.
 
 ## What just happened
 
-The `gcc` command you just ran did four things behind the scenes
-(preprocessing, compilation, assembly, and linking) to turn `hello.c` into
-the `hello` executable that `./hello` then ran. We're deliberately not
-opening that box yet — Chapter 4 walks through each of those four steps in
-detail, because it matters once your project spans more than one file. For
-now, treat `gcc ... -o hello hello.c` as a single unit: "compile this file
-into this program."
+The `gcc` command you just ran did several things behind the scenes to turn
+`hello.c` into the `hello` executable that `./hello` then ran. We're
+deliberately not opening that box yet — Chapter 1 walks through the
+preprocess → compile → assemble → link pipeline in detail, using this exact
+program as the example. For now, treat `gcc ... -o hello hello.c` as a
+single unit: "compile this file into this program." (Chapter 4 revisits
+linking again once your project spans *multiple* files, where it gets more
+interesting.)
 
 ## Common errors
 
