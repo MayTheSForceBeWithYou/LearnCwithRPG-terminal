@@ -1,0 +1,18 @@
+# Some Assembly Required -- settings
+#
+# Every setting below is optional. Delete a line and the game uses its
+# default; the whole file can be missing and the game still runs.
+
+# Random encounters: on or off. You can also toggle this in the menu.
+encounters = on
+
+# Percent multiplier on damage enemies deal to you. 100 is normal,
+# 50 is half, 200 is double. Range 1-1000.
+enemy_damage = 100
+
+# Percent multiplier on experience awarded. Range 1-1000.
+xp_rate = 100
+
+# Percent of your gold lost when defeated. 0 is forgiving,
+# 50 is Dragon Warrior. Range 0-100.
+gold_loss_on_death = 0
