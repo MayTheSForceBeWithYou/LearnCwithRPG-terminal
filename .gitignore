@@ -3,3 +3,6 @@ code/*/hello
 code/*/game
 code/*/*.o
 *.o
+
+# Windows "mark of the web" artifacts from files copied in from the host
+*:Zone.Identifier

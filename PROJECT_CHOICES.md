@@ -104,7 +104,63 @@ runtime; "Wick" is the canonical name used in written dialogue and chapter examp
 
 ## Checkpoint C — Combat Design *(before Chapter 15)*
 
-**Status:** Not reached.
+**Status:** Answered 2026-08-22.
+
+**Q1: Turn order?**
+Options: fixed by party order / speed-stat sorted / ATB time-based queue.
+**Chosen: speed-sorted by AGI, ties go to the hero** (`CONTENT.md` §9.3's model).
+Impact: every combatant carries an AGI stat; Chapter 16 sorts a small array of
+structs once per round. With a solo hero this is the hero versus 1–3 enemies.
+AGI also drives hit chance and flee chance, so it is doing three jobs and needs
+care when balancing.
+
+**Q2: Damage formula?**
+Options: simple `atk - def` / FF1-style with variance / learner designs one.
+**Chosen: FF1-style with variance** (`CONTENT.md` §9.2 as written):
+
+```
+base     = (attacker.ATK + weapon.power) - (defender.DEF / 2)
+base     = max(base, 1)
+variance = random in [-12%, +12%] of base
+damage   = max(1, base + variance)
+
+critical: 1 in 32 -> damage * 2, ignoring defender.DEF
+```
+
+Spells ignore physical DEF entirely and use a flat power value plus the same
+variance band, keeping the magic path meaningfully different from the sword path.
+Impact: Chapter 15 builds these as pure functions with a hand-rolled test harness.
+`CONTENT.md` notes the level table values are a starting point that **will need
+playtesting** — chapters must say so rather than presenting them as tuned.
+
+**Q3: Encounter style?**
+Options offered: random on a step counter / visible wandering enemies.
+**Chosen: random on a step counter, *plus* a player-facing option to turn
+encounters off entirely** — as the Final Fantasy Pixel Remasters do.
+Base model from `CONTENT.md` §9.3: roll each step, trigger when
+`steps_since >= 12 && rand() % 100 < 22`, then reset; tunable per region.
+Impact: this is a **deviation from `CONTENT.md`**, which did not include a toggle.
+The toggle is read from the config file below (see Q4) and is also exposed as a
+runtime toggle in the Chapter 14 menu, so the player can flip it mid-run. Chapter
+16's encounter check gains an early-out when encounters are disabled.
+
+**Q4: Difficulty philosophy?**
+Options: forgiving / classic-brutal / tunable via a config file.
+**Chosen: tunable via a config file.**
+Impact: also a **deviation from `CONTENT.md`**, which left difficulty unstated.
+A text config file (parsed with the Chapter 11 file-I/O techniques, and validated
+the same way — never trust a file on disk) supplies at minimum:
+
+| Key | Meaning |
+|---|---|
+| `encounters` | `on` / `off` — the Q3 toggle's default at boot |
+| `enemy_damage` | multiplier on damage dealt to the hero |
+| `xp_rate` | multiplier on XP awarded |
+| `gold_loss_on_death` | fraction of gold lost when defeated |
+
+Missing keys fall back to documented defaults so a missing or partial config file
+is never fatal. This adds a small config module; it reuses Chapter 11's parsing
+and Chapter 13's table-driven lookup rather than introducing a new technique.
 
 ---
 
