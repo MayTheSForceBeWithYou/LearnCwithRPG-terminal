@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "entity.h"
 #include "party.h"
 #include "magic.h"
@@ -130,7 +131,23 @@ Player entity_create_player(void)
     Player p;
 
     printf("What is your name, hero? ");
-    fgets(p.name, sizeof p.name, stdin);
+    if (fgets(p.name, sizeof p.name, stdin) == NULL) {
+        p.name[0] = '\0';
+    }
+
+    /* fgets keeps the newline. Trim it here, once, so every later use of
+       the name is a plain string -- printing it, saving it, loading it
+       back. Relying on that trailing newline for formatting broke the
+       moment a name came from a save file instead of the keyboard. */
+    size_t len = strlen(p.name);
+    while (len > 0 && (p.name[len - 1] == '\n' || p.name[len - 1] == '\r')) {
+        p.name[len - 1] = '\0';
+        len--;
+    }
+
+    if (p.name[0] == '\0') {
+        snprintf(p.name, sizeof p.name, "Wick");
+    }
 
     p.x = 1;
     p.y = 1;
@@ -155,17 +172,20 @@ Player entity_create_player(void)
 
 void entity_print_sheet(const Player *p)
 {
-    float power_rating = (float)(p->attack + p->defense) / 2.0f;
+    /* Effective stats, so equipment shows up here as well as in battle. */
+    int atk = entity_attack(p);
+    int def = entity_defense(p);
+    float power_rating = (float)(atk + def) / 2.0f;
 
     printf("\n");
-    printf("Welcome, %s", p->name);
+    printf("Welcome, %s\n", p->name);
     printf("----------------------------------------\n");
     printf("Level:  %d\n", p->level);
     printf("HP:     %d/%d\n", p->hp, p->max_hp);
     printf("MP:     %d/%d\n", p->mp, p->max_mp);
     printf("Gold:   %d\n", p->gold);
-    printf("ATK:    %d\n", p->attack);
-    printf("DEF:    %d\n", p->defense);
+    printf("ATK:    %d\n", atk);
+    printf("DEF:    %d\n", def);
     printf("Rank:   %c\n", rank_to_char(p->rank));
     printf("Power:  %.1f\n", power_rating);
     printf("----------------------------------------\n");
