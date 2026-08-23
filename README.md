@@ -33,7 +33,7 @@ for WSL-specific gotchas.
 
 ## Status
 
-Chapters 0–23 written, each with a verified `code/chNN/` snapshot that
+Chapters 0–24 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
 AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
 suite -- currently 303,274 assertions covering combat maths, levelling,
@@ -45,6 +45,9 @@ boss phases, and world gating.
 capital, two dungeons, a final court, NPCs, optional random encounters,
 turn-based combat, levelling, inventory, magic, equipment, shops,
 save/load, three bosses, four crown fragments, and an ending.
+**Chapter 24 packages it**: `make install`, `make release`, `make dist`,
+and a binary that runs from anywhere rather than only from its build
+directory.
 
 As of Chapter 22 the game also runs clean under Valgrind's memcheck
 (`make valgrind`), with zero definitely-lost bytes and a narrow
