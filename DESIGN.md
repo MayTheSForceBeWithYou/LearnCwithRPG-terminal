@@ -72,12 +72,16 @@ installed" to "I compiled and ran a C program." Do not assume any toolchain exis
 
 ### Packages to install (verify names against current Arch repos before publishing)
 
+*(Checked 2026-08-23: `sdl2` no longer exists as a package — it is now
+`sdl2-compat`, which provides the SDL2 API on top of SDL3. Everything else
+below still resolves.)*
+
 ```bash
 sudo pacman -S --needed base-devel gdb valgrind git pkgconf
 # Terminal-mode track:
 sudo pacman -S --needed ncurses
 # Graphical track (only if chosen at Checkpoint A):
-sudo pacman -S --needed sdl2 sdl2_image sdl2_ttf sdl2_mixer mesa vulkan-icd-loader
+sudo pacman -S --needed sdl2-compat sdl2_image sdl2_ttf sdl2_mixer mesa vulkan-icd-loader
 ```
 
 ### WSL-specific guidance that MUST appear in Chapter 0
@@ -494,22 +498,35 @@ game at 2,937 lines and four chapters remaining.)*
 
 ## 10. Definition of Done
 
-Before considering the tutorial complete, verify every item:
+Before considering the tutorial complete, verify every item.
 
-- [ ] Every chapter file exists and follows the §5.3 structure.
-- [ ] Every `code/chNN/` snapshot compiles with zero warnings under the standard flags.
-- [ ] Every snapshot runs and is playable to the extent that chapter claims.
-- [ ] `diff -r code/chNN code/ch(NN+1)` shows only the changes that chapter taught.
-- [ ] No chapter uses a C concept before its spotlight section introduces it.
-- [ ] All six checkpoints are present, each asking and then *waiting*.
-- [ ] `PROJECT_CHOICES.md` exists and every branching chapter references it.
-- [ ] Every chapter has a "Common errors" section with real, verbatim compiler output.
-- [ ] All exercises have solutions in collapsed `<details>` blocks.
-- [ ] The four appendices are written.
-- [ ] The final game has: overworld, ≥2 towns, ≥1 dungeon, NPCs with dialogue, random
+*Status as of 2026-08-23: every box below verified from disk. The build and
+test sweep is reproducible — see §"Build & Verify" in `CLAUDE.md`.*
+
+*The concept-ordering rule was audited mechanically across all 25 snapshots
+(first appearance of `struct`, `enum`, pointer dereference, `malloc`/`free`,
+`fopen`, the `str*` family, function pointers, `realloc`, bit flags,
+`assert` and `<stdarg.h>`, each against its spotlight chapter). One genuine
+early use exists: `strlen` appears in Chapter 11's `map.c` before Chapter
+12's strings spotlight. It is glossed inline where it is used and called out
+explicitly in Chapter 11's "Next up" — acknowledged rather than silent,
+which §5.1 permits. No unacknowledged violations found.*
+
+- [x] Every chapter file exists and follows the §5.3 structure.
+- [x] Every `code/chNN/` snapshot compiles with zero warnings under the standard flags.
+- [x] Every snapshot runs and is playable to the extent that chapter claims.
+- [x] `diff -r code/chNN code/ch(NN+1)` shows only the changes that chapter taught.
+- [x] No chapter uses a C concept before its spotlight section introduces it
+      (one acknowledged exception, documented above).
+- [x] All six checkpoints are present, each asking and then *waiting*.
+- [x] `PROJECT_CHOICES.md` exists and every branching chapter references it.
+- [x] Every chapter has a "Common errors" section with real, verbatim compiler output.
+- [x] All exercises have solutions in collapsed `<details>` blocks.
+- [x] All five appendices are written.
+- [x] The final game has: overworld, ≥2 towns, ≥1 dungeon, NPCs with dialogue, random
       encounters, turn-based combat, levelling, inventory, magic, equipment, shops,
       save/load, a final boss, and an ending.
-- [ ] `README.md` lists all chapters with one-line descriptions and estimated time.
+- [x] `README.md` lists all chapters with one-line descriptions and estimated time.
 
 ---
 

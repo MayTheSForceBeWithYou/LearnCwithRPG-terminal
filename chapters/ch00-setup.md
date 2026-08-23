@@ -45,8 +45,12 @@ aren't a wall of unexplained nouns.
   needs** — you picked it at Checkpoint A over SDL2's windowed graphics,
   because it keeps all your attention on C itself with nothing extra to
   configure. If you ever migrate to SDL2 (Chapter 8 builds the abstraction
-  that makes this possible later), you'd install `sdl2`, `sdl2_image`,
-  `sdl2_ttf`, and `sdl2_mixer` instead.
+  that makes this possible later), you'd install `sdl2-compat`,
+  `sdl2_image`, `sdl2_ttf`, and `sdl2_mixer` instead. (`sdl2-compat`, not
+  `sdl2` — Arch replaced the original package with a compatibility layer
+  that provides the same API on top of SDL3. A good reminder to check
+  `pacman -Si <name>` rather than trusting any tutorial, this one
+  included.)
 
 *Translation unit, undefined behaviour,* and friends are coming — but not
 today. Today is just tools.

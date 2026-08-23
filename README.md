@@ -33,6 +33,9 @@ for WSL-specific gotchas.
 
 ## Status
 
+**The course is complete.** All 25 chapters (0–24), all five appendices,
+and all six checkpoints answered and recorded in `PROJECT_CHOICES.md`.
+
 Chapters 0–24 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
 AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
@@ -69,40 +72,55 @@ content bible.
 
 ## Chapter Index
 
-| Ch | Title | C Concepts | Game Milestone |
-|----|-------|-----------|----------------|
-| 0 | Setting Up WSL Arch | toolchain, pacman, `gcc`, editors | Environment ready |
-| 1 | Your First Program | `main`, `printf`, compile/link pipeline, `-Wall` | Title screen prints |
-| 2 | Data and Input | types, `int`/`char`/`float`, `fgets` vs `scanf`, casting | Name your hero, see stats |
-| 3 | Decisions and Loops | `if`/`switch`/`while`/`for`, functions, scope, return values | One-round coin-flip duel |
-| 4 | Many Files, One Program | headers, include guards, translation units, `make` | Project skeleton, `make run` |
-| 5 | Arrays and the Map | arrays, 2D arrays, indexing, bounds (and going out of them) | A world map on screen |
-| 6 | Structs and Enums | `struct`, `enum`, `typedef`, composition | Hero drawn at a position |
-| 7 | Pointers | addresses, `*`/`&`, pass-by-reference, `NULL`, const-correctness | Walk around with collision |
-| 8 | **A Real Game Loop** ⚑ | opaque interfaces, separating logic from display | Raw input, no Enter key |
-| 9 | The Camera | modular arithmetic, clamping, coordinate spaces | A world larger than the screen |
-| 10 | The Heap | `malloc`/`free`, ownership, leaks, ASan, `gdb` | Maps allocated at runtime |
-| 11 | Reading Files | `FILE*`, `fopen`/`fgets`, parsing, error handling | Edit maps without recompiling |
-| 12 | Strings | NUL termination, `str*` functions, buffer overruns, word wrap | NPCs speak; text boxes |
-| 13 | **A World to Explore** ⚑ | arrays of structs, lookup tables | Towns, dungeons, warps, NPCs |
-| 14 | State Machines | function pointers, `typedef` of function types, dispatch tables | Clean EXPLORE/DIALOG/MENU modes |
-| 15 | **Numbers That Fight** ⚑ | RNG and seeding, integer overflow, pure functions, unit tests | Damage math you can trust |
-| 16 | The Battle Loop | struct arrays, sorting, state within state | Winnable random encounters, XP, levels |
-| 17 | Menus and Inventory | dynamic arrays, `realloc`, growth strategies | Carry and use items |
-| 18 | **Magic and Equipment** ⚑ | data-driven design, function-pointer effects, bit flags | Spells, gear, stat modifiers |
-| 19 | Shops and Economy | more state machines, input validation | Gold, shops, inns |
-| 20 | **Saving the Game** ⚑ | serialisation, struct padding, endianness, versioning | Save and load |
-| 21 | Data-Driven Content | tokenising, tables, hot-reloading content | Add enemies without recompiling |
-| 22 | Making It Solid | assertions, defensive coding, `valgrind`, UB hunting | Clean run under sanitizers |
-| 23 | **The Ending** ⚑ | boss phases, ending sequence, final polish | Boss, ending, credits |
-| 24 | Packaging and Distribution | static vs dynamic linking, `make install`, runtime deps | A friend can run it |
+| Ch | Title | C Concepts | Game Milestone | Time |
+|----|-------|-----------|----------------|------|
+| 0 | Setting Up WSL Arch | toolchain, pacman, `gcc`, editors | Environment ready | 1h |
+| 1 | Your First Program | `main`, `printf`, compile/link pipeline, `-Wall` | Title screen prints | 1h |
+| 2 | Data and Input | types, `int`/`char`/`float`, `fgets` vs `scanf`, casting | Name your hero, see stats | 1–2h |
+| 3 | Decisions and Loops | `if`/`switch`/`while`/`for`, functions, scope, return values | One-round coin-flip duel | 2h |
+| 4 | Many Files, One Program | headers, include guards, translation units, `make` | Project skeleton, `make run` | 2–3h |
+| 5 | Arrays and the Map | arrays, 2D arrays, indexing, bounds (and going out of them) | A world map on screen | 2h |
+| 6 | Structs and Enums | `struct`, `enum`, `typedef`, composition | Hero drawn at a position | 2h |
+| 7 | Pointers | addresses, `*`/`&`, pass-by-reference, `NULL`, const-correctness | Walk around with collision | 3–4h |
+| 8 | **A Real Game Loop** ⚑ | opaque interfaces, separating logic from display | Raw input, no Enter key | 2–3h |
+| 9 | The Camera | modular arithmetic, clamping, coordinate spaces | A world larger than the screen | 2h |
+| 10 | The Heap | `malloc`/`free`, ownership, leaks, ASan, `gdb` | Maps allocated at runtime | 3–4h |
+| 11 | Reading Files | `FILE*`, `fopen`/`fgets`, parsing, error handling | Edit maps without recompiling | 2–3h |
+| 12 | Strings | NUL termination, `str*` functions, buffer overruns, word wrap | NPCs speak; text boxes | 3h |
+| 13 | **A World to Explore** ⚑ | arrays of structs, lookup tables | Towns, dungeons, warps, NPCs | 3h |
+| 14 | State Machines | function pointers, `typedef` of function types, dispatch tables | Clean EXPLORE/DIALOG/MENU modes | 2–3h |
+| 15 | **Numbers That Fight** ⚑ | RNG and seeding, integer overflow, pure functions, unit tests | Damage math you can trust | 3h |
+| 16 | The Battle Loop | struct arrays, sorting, state within state | Winnable random encounters, XP, levels | 3–4h |
+| 17 | Menus and Inventory | dynamic arrays, `realloc`, growth strategies | Carry and use items | 3h |
+| 18 | **Magic and Equipment** ⚑ | data-driven design, function-pointer effects, bit flags | Spells, gear, stat modifiers | 3h |
+| 19 | Shops and Economy | more state machines, input validation | Gold, shops, inns | 2h |
+| 20 | **Saving the Game** ⚑ | serialisation, struct padding, endianness, versioning | Save and load | 3h |
+| 21 | Data-Driven Content | tokenising, tables, hot-reloading content | Add enemies without recompiling | 2h |
+| 22 | Making It Solid | assertions, defensive coding, `valgrind`, UB hunting | Clean run under sanitizers | 3–4h |
+| 23 | **The Ending** ⚑ | boss phases, ending sequence, final polish | Boss, ending, credits | 3–4h |
+| 24 | Packaging and Distribution | static vs dynamic linking, `make install`, runtime deps | A friend can run it | 2–3h |
 
 ⚑ = chapter preceded by a checkpoint (a required stop to ask you a design question).
 
+**Total: roughly 60–70 hours** at a steady pace, spread over as long as you
+like. The times assume you type the code rather than copying it, and that
+you stop to make the mistakes the "Common errors" sections describe. Chapter
+7 (pointers) and Chapter 10 (the heap) are the two that most people spend
+longer on than they expect; that is normal and not a sign of trouble.
+
 ## Appendices
 
-- `a-wsl-troubleshooting.md` — WSL/Arch-specific gotchas collected in one place
-- `b-c-pitfalls.md` — common C mistakes and how to spot them
-- `c-gdb-and-sanitizers.md` — debugging reference
-- `d-glossary.md` — every term defined on first use, indexed here too
-- `e-stretch-goals.md` — optional extensions offered at Checkpoint F
+- [`a-wsl-troubleshooting.md`](appendices/a-wsl-troubleshooting.md) —
+  WSL/Arch gotchas in one place: no window, terminal rendering, keyring and
+  clock-skew failures, and why Valgrind refuses to start on Arch
+- [`b-c-pitfalls.md`](appendices/b-c-pitfalls.md) — the mistakes this course
+  walks you into on purpose, indexed **by symptom**, with real compiler and
+  sanitizer output for each
+- [`c-gdb-and-sanitizers.md`](appendices/c-gdb-and-sanitizers.md) — a
+  working reference for `gdb`, ASan, UBSan and Valgrind, including which
+  tool finds which class of bug and a debugging order that works
+- [`d-glossary.md`](appendices/d-glossary.md) — every term the course
+  defines on first use, 50-odd entries, each with the chapter that covers it
+- [`e-stretch-goals.md`](appendices/e-stretch-goals.md) — four projects for
+  afterwards, chosen at Checkpoint F: a bestiary, New Game+, a boat, and an
+  SDL2 port
