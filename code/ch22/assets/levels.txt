@@ -1,0 +1,29 @@
+# Level table for Some Assembly Required
+#
+# Format:  level <n> <hp> <mp> <atk> <def> <agi> <xp_to_next>
+# xp_to_next of 0 marks the level cap.
+#
+# These numbers are a starting point and WILL need playtesting.
+# Chapter 16 measured the early curve and had to change it.
+# Edit freely -- the game re-reads this file every time it starts.
+
+level  1    20    0    5    3    5       8
+level  2    26    2    6    4    6      18
+level  3    32    4    8    5    6      32
+level  4    39    6    9    6    7      55
+level  5    47    9   11    8    8      90
+level  6    55   12   13    9    9     140
+level  7    64   15   15   11   10     210
+level  8    73   18   17   12   11     300
+level  9    83   22   19   14   12     420
+level 10    94   26   21   16   13     580
+level 11   105   30   24   18   14     780
+level 12   117   35   26   20   15    1030
+level 13   130   40   29   22   17    1350
+level 14   143   45   32   24   18    1750
+level 15   157   51   35   27   19    2250
+level 16   172   57   38   29   21    2850
+level 17   188   63   41   32   22    3600
+level 18   205   70   45   35   24    4500
+level 19   222   77   48   38   25    5600
+level 20   240   85   52   41   27       0

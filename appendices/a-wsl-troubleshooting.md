@@ -91,3 +91,66 @@ Audio routes through WSLg's PulseAudio bridge and generally works without
 configuration on current WSL builds. If you attempt the optional sound
 chapter and hear nothing, this is the most fragile part of the stack — check
 `wsl --update` first, same as the graphical-window issue above.
+
+## Valgrind: "Fatal error at startup: a function redirection"
+
+Introduced in Chapter 22. You install `valgrind`, run it, and it refuses to
+start at all:
+
+```
+valgrind:  Fatal error at startup: a function redirection
+valgrind:  which is mandatory for this platform-tool combination
+valgrind:  cannot be set up.  Details of the redirection are:
+valgrind:
+valgrind:  A must-be-redirected function
+valgrind:  whose name matches the pattern:      memcmp
+valgrind:  in an object with soname matching:   ld-linux-x86-64.so.2
+valgrind:  was not found whilst processing
+valgrind:  symbols from the object with soname: ld-linux-x86-64.so.2
+valgrind:
+valgrind:  Possible fixes: (1, short term): install glibc's debuginfo
+valgrind:  package on this machine.
+```
+
+Valgrind needs debug symbols for the dynamic linker, and Arch ships a
+stripped `ld.so`. The suggested fix names Debian and Fedora packages —
+`libc6-dbg`, `glibc-debuginfo` — and **neither exists on Arch**. There is no
+`glibc-debug` package in the Arch repositories either:
+
+```
+error: package 'glibc-debug' was not found
+```
+
+Arch serves debug symbols over the network instead, through **debuginfod**.
+Valgrind 3.20 and later can fetch what it needs from there, and it is
+already configured — `/etc/debuginfod/archlinux.urls` ships with the
+`debuginfod` package and is exported into your environment by
+`/etc/profile.d/debuginfod.sh`.
+
+The catch is that the profile script runs at **login**. If you installed
+`valgrind` and `debuginfod` during your current session, the variable is not
+set in that shell yet. Check it:
+
+```bash
+echo $DEBUGINFOD_URLS
+```
+
+If that prints nothing, either open a new terminal, or set it for one
+command:
+
+```bash
+DEBUGINFOD_URLS=https://debuginfod.archlinux.org valgrind ./run_tests
+```
+
+Both work. Once the variable is set, Valgrind starts normally.
+
+Two consequences worth knowing:
+
+- **The first run needs network access**, because the symbols are
+  downloaded rather than installed. They are cached under
+  `~/.cache/debuginfod_client` afterwards, so later runs work offline.
+- **The first run is slow** while that download happens — on top of
+  Valgrind's usual 20–50× slowdown. Don't conclude your program has hung.
+
+This also affects `gdb`, which uses the same mechanism to fetch symbols for
+system libraries.

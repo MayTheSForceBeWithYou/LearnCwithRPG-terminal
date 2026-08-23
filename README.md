@@ -33,12 +33,18 @@ for WSL-specific gotchas.
 
 ## Status
 
-Chapters 0–19 written, each with a verified `code/chNN/` snapshot that
+Chapters 0–22 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
 AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
-suite -- currently 101,163 assertions covering combat maths, levelling,
+suite -- currently 301,314 assertions covering combat maths, levelling,
 battle termination, inventory growth, config parsing, spells, equipment,
-and shop transactions.
+shop transactions, save round-trips, data-driven tables, and integer
+overflow.
+
+As of Chapter 22 the game also runs clean under Valgrind's memcheck
+(`make valgrind`), with zero definitely-lost bytes and a narrow
+suppression file for ncurses' own global state, and ships a parser fuzzer
+(`make fuzz`) that throws 4,000 random files at all five file parsers.
 
 Checkpoints A through D are answered — terminal + ncurses; the world of
 *Some Assembly Required*, where a solo hero named Wick recovers four

@@ -1,0 +1,38 @@
+# Valgrind suppressions for Some Assembly Required
+#
+# ncurses allocates global state inside initscr() and keeps it for the
+# life of the process. endwin() does not release all of it, by design.
+# Valgrind reports those blocks as "possibly lost" or "still reachable".
+#
+# They are not our bugs and we cannot fix them -- but leaving them in the
+# output trains you to skim past a report you should be reading closely.
+# Suppress precisely these, and nothing else.
+#
+# Usage:  valgrind --suppressions=valgrind.supp ./game
+
+{
+   ncurses-initscr-tparm-setup
+   Memcheck:Leak
+   match-leak-kinds: possible,reachable
+   ...
+   fun:initscr
+   ...
+}
+
+{
+   ncurses-newterm
+   Memcheck:Leak
+   match-leak-kinds: possible,reachable
+   ...
+   fun:newterm
+   ...
+}
+
+{
+   ncurses-setupterm
+   Memcheck:Leak
+   match-leak-kinds: possible,reachable
+   ...
+   fun:setupterm
+   ...
+}
