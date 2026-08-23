@@ -257,4 +257,65 @@ The failure message must name the specific problem, not just "save corrupt".
 
 ## Checkpoint F — Endgame & Scope *(before Chapter 23)*
 
-**Status:** Not reached.
+**Status:** Answered 2026-08-22.
+
+Asked after Chapter 22 was verified and committed. Context presented at the
+time: three of the six core areas existed, no boss code existed at all, and
+the game stood at 4,404 lines against `DESIGN.md`'s ~5,000 cap.
+
+**Q1: How much of the world ships?**
+Options: core six / full eight / compress to four.
+**Chosen: the core six.**
+Chapter 23 adds **Mudwick**, **The Sump**, and **The Crownless Court** to
+the three existing areas, matching `CONTENT.md` §5's "must ship" list: two
+fragments, three settlements, two dungeons, and a complete story.
+Impact: **Bellhollow Mine and The Unfinished Tower are cut**, and with them
+the Bellhollow Tolling and Unfinished Knight boss fights. The level curve
+caps around 15 rather than 20, per `CONTENT.md`'s scope guidance. Because
+maps are data files in `assets/`, new areas cost mostly table entries in
+`world.c` rather than code, which is what makes this fit the remaining
+budget.
+
+**Open question this creates — fragments III and IV.** `CONTENT.md` §5 says
+that when cutting to core, Fragments III and IV should be compressed "into a
+single Unfinished Tower run" — but the Tower is not in the core list, so
+that instruction contradicts itself. The title is *A Quest in Four Pieces*
+and the premise depends on four fragments, so dropping to two is not an
+option. **Proposed resolution, to confirm before Chapter 23 is written:**
+Vex already holds Fragments III and IV when the player reaches The Crownless
+Court — recovered off-screen during Act II, which the barrow "already
+searched, recently, badly" beat already sets up — and they are recovered
+from him at the end. This preserves the four-fragment premise, keeps the
+title honest, and removes two dungeons without leaving a hole.
+
+**Q2: How does Vex end?**
+Options: he unmakes himself / he must be put down / player chooses in the room.
+**Chosen: he must be put down.**
+The truth does not free Vex; it hollows him out, and what remains still has
+to be fought. Impact: Chapter 23 gets a conventional three-phase boss fight
+as its combat climax, which suits a final chapter — the mechanics the player
+has been building since Chapter 16 get one last real test. The ending is the
+bleaker of the two: the player does something regrettable and necessary.
+`CONTENT.md` §14's "no jokes in this room" direction applies with full
+force, and §5's dial-down-the-comedy instruction from the Unfinished Tower
+onward now applies from Castle Hollis onward instead, since the Tower is cut.
+
+**Q3: Which stretch goals should Appendix E cover?**
+Options offered: bestiary / New Game+ / boat or vehicle / SDL2 port.
+**Chosen: all four.**
+Impact: `appendices/e-stretch-goals.md` covers every one — the bestiary and
+New Game+ as extensions of the Chapter 20/21 save and data work, the boat as
+a traversal-rules exercise, and the SDL2 port as the payoff for Chapter 8's
+renderer abstraction. These are sketches with design guidance, not full
+chapters; the learner implements them unaided, which is the point of an
+appendix rather than a chapter.
+
+**Q4: A chapter on packaging?**
+Options: fold into ch23 / its own ch24 / skip it.
+**Chosen: its own Chapter 24.**
+Impact: **this extends the course past `DESIGN.md`'s 23-chapter curriculum**
+(§7), which has been updated accordingly. Chapter 23 ends on the boss, the
+ending, and the credits; Chapter 24 covers static vs dynamic linking, the
+ncurses runtime dependency, `make install`, tarballs, and what actually
+breaks on someone else's machine. Splitting them means the ending is not
+competing for space with linker mechanics.

@@ -52,8 +52,10 @@ fragments of a shattered crown for an apologetic civil service; and
 AGI-sorted turn order with an FF1-style damage formula, encounters you can
 switch off, difficulty tunable from a config file, and magic paid for from
 a single MP pool. Checkpoint E is answered too: text saves written at inns,
-with corrupt files refused rather than partially loaded. Checkpoint F (Endgame
-& Scope) is next, before Chapter 23.
+with corrupt files refused rather than partially loaded. Checkpoint F is
+answered as well — the game ships the core six locations (Bellhollow Mine
+and The Unfinished Tower are cut), Vex is fought and put down, and packaging
+gets its own Chapter 24, extending the course to 24 chapters.
 See `PROJECT_CHOICES.md` for the full ledger and `CONTENT.md` for the
 content bible.
 
@@ -84,7 +86,8 @@ content bible.
 | 20 | **Saving the Game** ⚑ | serialisation, struct padding, endianness, versioning | Save and load |
 | 21 | Data-Driven Content | tokenising, tables, hot-reloading content | Add enemies without recompiling |
 | 22 | Making It Solid | assertions, defensive coding, `valgrind`, UB hunting | Clean run under sanitizers |
-| 23 | **The Ending** ⚑ | packaging, `make install`, final polish | Boss, ending, credits, shippable |
+| 23 | **The Ending** ⚑ | boss phases, ending sequence, final polish | Boss, ending, credits |
+| 24 | Packaging and Distribution | static vs dynamic linking, `make install`, runtime deps | A friend can run it |
 
 ⚑ = chapter preceded by a checkpoint (a required stop to ask you a design question).
 

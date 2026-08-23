@@ -341,6 +341,11 @@ on disk.
    an SDL2 port if they started on ncurses.
 3. **Distribution** — do they want a chapter on packaging the game so a friend can run it?
 
+*Answered 2026-08-22: core-six scope (Bellhollow Mine and The Unfinished
+Tower cut), Vex is fought and put down, all four stretch goals go in
+Appendix E, and packaging becomes its own Chapter 24. See
+`PROJECT_CHOICES.md`.*
+
 ---
 
 ## 7. Curriculum
@@ -372,9 +377,15 @@ on disk.
 | 20 | **Saving the Game** ⚑ | serialisation, struct padding, endianness, versioning | Save and load |
 | 21 | Data-Driven Content | tokenising, tables, hot-reloading content | Add enemies without recompiling |
 | 22 | Making It Solid | assertions, defensive coding, `valgrind`, UB hunting | Clean run under sanitizers |
-| 23 | **The Ending** ⚑ | packaging, `make install`, final polish | Boss, ending, credits, shippable |
+| 23 | **The Ending** ⚑ | boss phases, ending sequence, final polish | Boss, ending, credits |
+| 24 | Packaging and Distribution | static vs dynamic linking, `make install`, runtime deps | A friend can run it |
 
 ⚑ = chapter preceded by a checkpoint.
+
+*(Chapter 24 added 2026-08-22 at Checkpoint F. Packaging was originally
+folded into Chapter 23; the learner chose to split it so the ending is not
+competing for space with linker mechanics. Chapter 23's concept column moved
+from packaging to the boss fight and ending accordingly.)*
 
 ### Chapter Notes
 
