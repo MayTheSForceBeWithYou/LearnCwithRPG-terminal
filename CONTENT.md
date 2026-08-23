@@ -568,6 +568,8 @@ Do not decide these here. Ask at the specified checkpoints.
   `enemy_damage`, `xp_rate`, `gold_loss_on_death`). See `PROJECT_CHOICES.md`.
 - ~~**Checkpoint D**~~ — ✅ Answered 2026-08-22. MP pool (not charges); solo hero learns
   every spell on schedule; level and spell tables move to data files in ch21.
-- **Checkpoint E** — save format.
+- ~~**Checkpoint E**~~ — ✅ Answered 2026-08-22. Text `key = value` saves, written at
+  inns only (as §15 already describes), and a corrupt or outdated save is refused with
+  a specific reason rather than partially loaded.
 - **Checkpoint F** — Vex's fate (self-unmaking vs. put down), which optional dungeons
   ship, stretch goals, packaging.

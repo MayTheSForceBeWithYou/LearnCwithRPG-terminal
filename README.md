@@ -45,7 +45,9 @@ Checkpoints A through D are answered — terminal + ncurses; the world of
 fragments of a shattered crown for an apologetic civil service; and
 AGI-sorted turn order with an FF1-style damage formula, encounters you can
 switch off, difficulty tunable from a config file, and magic paid for from
-a single MP pool. Checkpoint E (Save Format) is next, before Chapter 20.
+a single MP pool. Checkpoint E is answered too: text saves written at inns,
+with corrupt files refused rather than partially loaded. Checkpoint F (Endgame
+& Scope) is next, before Chapter 23.
 See `PROJECT_CHOICES.md` for the full ledger and `CONTENT.md` for the
 content bible.
 

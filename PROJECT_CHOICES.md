@@ -212,7 +212,46 @@ Sequencing agreed at this checkpoint:
 
 ## Checkpoint E — Save Format *(before Chapter 20)*
 
-**Status:** Not reached.
+**Status:** Answered 2026-08-22.
+
+**Q1: Save format?**
+Options: text `key = value` (default) / binary `fwrite` of structs / both with a
+versioned header.
+**Chosen: text, `key = value`.**
+Impact: saves are human-readable and repairable by hand, and Chapter 20 reuses the
+Chapter 11 parsing and Chapter 17 config techniques rather than teaching new syntax —
+so the chapter's real subject is *serialisation design and validation*, not I/O
+mechanics. A version field still goes in the file so a future format change is
+detected rather than misread (see Q3).
+
+**What this choice costs, recorded deliberately:** `DESIGN.md` §6.3 offered binary
+partly because it is "a superb vehicle for teaching struct padding, endianness, and
+why 'just dump the struct' is a trap." Declining it means **Chapter 20 no longer
+teaches struct padding or endianness**, and `DESIGN.md` §7's curriculum table lists
+both as Chapter 20 concepts. Chapter 20 must therefore cover them as an explicit
+sidebar — *why we are not doing it this way* — rather than dropping them silently.
+That keeps the curriculum promise without building a format the learner did not want.
+
+**Q2: When can the player save?**
+Options: at inns only (Dragon Warrior style) / anywhere from the menu / both, with a
+suspend slot.
+**Chosen: at inns only.**
+Matches `CONTENT.md` §15, which already describes inns as "full HP/MP restore and the
+save point, Dragon Warrior style." Impact: `shop_rest` already exists and already
+reports success, so saving hooks onto it — but per Chapter 19's exercise 3, the save
+call belongs in the *caller* (which holds the whole `Game`) rather than inside
+`shop_rest`, which currently knows about only a `Shop` and a `Player`. Resting and
+saving being one action gives inns real weight and makes defeat meaningful.
+
+**Q3: Behaviour on a corrupt or outdated save?**
+Options: refuse and start fresh / load what is valid and default the rest / refuse but
+keep the bad file.
+**Chosen: refuse to load, explain why, start fresh.**
+Impact: every field is validated on load and a partial load is never performed — the
+same discipline `map_load` (Chapter 11) and `config_load` (Chapter 17) already apply
+to untrusted files, now applied to a file the game itself wrote. A version field is
+checked first; a mismatch is reported as a version problem rather than a parse error.
+The failure message must name the specific problem, not just "save corrupt".
 
 ---
 
