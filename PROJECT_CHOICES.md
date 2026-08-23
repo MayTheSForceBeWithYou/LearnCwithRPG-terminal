@@ -270,8 +270,7 @@ Chapter 23 adds **Mudwick**, **The Sump**, and **The Crownless Court** to
 the three existing areas, matching `CONTENT.md` §5's "must ship" list: two
 fragments, three settlements, two dungeons, and a complete story.
 Impact: **Bellhollow Mine and The Unfinished Tower are cut**, and with them
-the Bellhollow Tolling and Unfinished Knight boss fights. The level curve
-caps around 15 rather than 20, per `CONTENT.md`'s scope guidance. Because
+the Bellhollow Tolling and Unfinished Knight boss fights. Because
 maps are data files in `assets/`, new areas cost mostly table entries in
 `world.c` rather than code, which is what makes this fit the remaining
 budget.
@@ -281,12 +280,41 @@ that when cutting to core, Fragments III and IV should be compressed "into a
 single Unfinished Tower run" — but the Tower is not in the core list, so
 that instruction contradicts itself. The title is *A Quest in Four Pieces*
 and the premise depends on four fragments, so dropping to two is not an
-option. **Proposed resolution, to confirm before Chapter 23 is written:**
+option. **Resolved 2026-08-22** (proposed at the checkpoint; the learner declined to
+override, so the default stands, per `DESIGN.md` §6.2):
 Vex already holds Fragments III and IV when the player reaches The Crownless
 Court — recovered off-screen during Act II, which the barrow "already
 searched, recently, badly" beat already sets up — and they are recovered
 from him at the end. This preserves the four-fragment premise, keeps the
 title honest, and removes two dungeons without leaving a hole.
+
+Consequences for Chapter 23, recorded so later work does not re-litigate them:
+
+- The player personally recovers **Fragments I and II** (Wetwood Barrow, The
+  Sump). Fragments III and IV are never dungeon rewards.
+- Vex's motive gets *stronger*, not weaker: he has been ahead of the player
+  the whole game, and the two fragments he carries are the reason the final
+  fight cannot simply be walked away from.
+- The Act II beat where Vex "takes the fragments at the tower"
+  (`CONTENT.md` §6) is replaced by him already having them. The dialogue at
+  Castle Hollis carries this instead — the court's Vex file is the player's
+  clue that someone else has been collecting.
+- The crown is reassembled from four pieces at the end, as the title
+  promises.
+
+**Level curve, as built (2026-08-23).** `CONTENT.md` suggested capping the
+curve at 15 for core scope. In the event `assets/levels.txt` still runs to
+20 — trimming it would only remove the option to over-prepare, and it costs
+nothing to leave in. What actually changed is the *balance target*: the
+three bosses were tuned by simulation to flip from unlikely to likely at
+levels 6–7, 11–12 and 14–15, so a player who explores the core six finishes
+around 14–15 with the last few levels available to anyone who wants them.
+
+**Boss stats were retuned, and this is a deviation from `CONTENT.md` §14.**
+Its Vex — 2,400 HP, 74 ATK — was measured at a **0% win rate at level 20
+with the best gear in the game**, and the scaled-down 1,400/52 version was
+also 0%. Vex ships at 600 HP, 34 ATK, 22 DEF. Bogwright and the Sump
+Auditor measured well and kept the bible's numbers unchanged.
 
 **Q2: How does Vex end?**
 Options: he unmakes himself / he must be put down / player chooses in the room.

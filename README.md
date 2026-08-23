@@ -33,13 +33,18 @@ for WSL-specific gotchas.
 
 ## Status
 
-Chapters 0–22 written, each with a verified `code/chNN/` snapshot that
+Chapters 0–23 written, each with a verified `code/chNN/` snapshot that
 compiles warning-free (and, from Chapter 10 on, runs clean under
 AddressSanitizer/UBSan). From Chapter 15 on there is also a `make test`
-suite -- currently 301,314 assertions covering combat maths, levelling,
+suite -- currently 303,274 assertions covering combat maths, levelling,
 battle termination, inventory growth, config parsing, spells, equipment,
-shop transactions, save round-trips, data-driven tables, and integer
-overflow.
+shop transactions, save round-trips, data-driven tables, integer overflow,
+boss phases, and world gating.
+
+**The game is finished as of Chapter 23**: an overworld, two towns, a
+capital, two dungeons, a final court, NPCs, optional random encounters,
+turn-based combat, levelling, inventory, magic, equipment, shops,
+save/load, three bosses, four crown fragments, and an ending.
 
 As of Chapter 22 the game also runs clean under Valgrind's memcheck
 (`make valgrind`), with zero definitely-lost bytes and a narrow

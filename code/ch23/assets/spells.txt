@@ -1,0 +1,26 @@
+# Spell table for Some Assembly Required
+#
+# Format:  spell <level> <mp> <magnitude> <status> <effect> <name...>
+#
+# status:  none stoneskin hastened warded asleep dulled
+# effect:  heal damage self_status enemy_status cure
+#
+# The EFFECT names map to functions compiled into the game -- behaviour
+# cannot be written in a data file, only selected. Adding a new effect
+# still means writing C; adding a new SPELL does not.
+#
+# Must stay sorted by level: the game treats known spells as a prefix.
+
+spell  2   3   35  none       heal          Mend
+spell  3   4   25  none       damage        Ember
+spell  5   4    4  dulled     enemy_status  Dull
+spell  6   6   40  none       damage        Frost Nip
+spell  7   7    3  asleep     enemy_status  Adjourn
+spell  8   5    0  none       cure          Purge
+spell  9   8    5  stoneskin  self_status   Stoneskin
+spell 10  10  110  none       heal          Greater Mend
+spell 12  11   70  none       damage        Jolt
+spell 13  12    5  hastened   self_status   Hasten
+spell 15  18  130  none       damage        Immolate
+spell 16  14    5  warded     self_status   Ward
+spell 18  30  240  none       damage        Sunder
