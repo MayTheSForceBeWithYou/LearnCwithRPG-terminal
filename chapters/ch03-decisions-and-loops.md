@@ -61,9 +61,9 @@ switch (call) {
 
 Each `case` is an entry point, not a boundary — without `break`, execution
 *falls through* into the next `case` regardless of whether its value
-matches. That's occasionally useful (you'll use it on purpose in this
+matches. That's *occasionally* useful (you'll use it on purpose in this
 chapter's actual duel code, to treat `'h'` and `'H'` identically) and
-frequently a bug when forgotten. `default` runs when nothing else matched;
+__frequently__ a bug when forgotten. `default` runs when nothing else matched;
 it's optional but good practice to include.
 
 ### Repeating work: `while` and `for`
@@ -139,7 +139,7 @@ valid; a variable declared inside a function (a *local* variable) simply
 doesn't exist as far as any other function is concerned, even one with the
 exact same name. This is a feature, not a coincidence — it's why you can
 freely name a loop counter `i` in ten different functions without them
-colliding.
+colliding (but please feel free to make them more descriptive than that).
 
 You've been calling functions since Chapter 1 (`printf`, `fgets`) without
 writing your own. The shape is always the same: a return type, a name,
@@ -281,13 +281,13 @@ gcc -std=c17 -Wall -Wextra -Wpedantic -g -o game main.c
 ./game
 ```
 
-Type a name, then `h` or `t` when prompted. Expected output for name
-`Elowen`, calling `h`:
+Type a name, then `h` or `t` when prompted. Here's the expected output for
+name `Elowen`, calling `h`:
 
 ```
 ****************************************
 *                                      *
-*          UNTITLED JRPG               *
+*           UNTITLED RPG               *
 *                                      *
 ****************************************
 

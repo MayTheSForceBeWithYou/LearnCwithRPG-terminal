@@ -1,7 +1,7 @@
 # Learn C by Building a JRPG
 
 An interactive, incremental tutorial that teaches you C — the real language,
-warts included — by having you build a genuinely playable JRPG in the spirit
+ugly parts included — by having you build a genuinely playable JRPG in the spirit
 of *Final Fantasy I* / *Dragon Warrior*: overworld, towns, dungeons, NPCs,
 turn-based combat, inventory, magic, shops, and save/load, ending in a final
 boss and credits.

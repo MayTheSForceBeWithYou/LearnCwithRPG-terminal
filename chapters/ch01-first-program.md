@@ -211,8 +211,8 @@ to 'foo'`. File that phrase away; you'll meet it for real in Chapter 4.
 These flags don't change what your program *does* — they change what the
 compiler is willing to warn you about while producing it. `-Wall` turns on
 a broad set of warnings for common mistakes (despite the name, it is not
-literally "all" warnings — that's a historical naming wart, not a
-description). `-Wextra` adds more, pickier ones. `-Wpedantic` warns about
+literally "all" warnings — that's a historical naming remnant, not a
+modern accurate description). `-Wextra` adds more, pickier ones. `-Wpedantic` warns about
 places your code relies on a compiler-specific extension instead of
 standard C. Together, they turn silent bugs into loud ones, on your
 terminal, before you've even run the program. See "Common errors" below for
@@ -237,7 +237,7 @@ int main(void)
 {
     printf("****************************************\n");
     printf("*                                      *\n");
-    printf("*          UNTITLED JRPG               *\n");
+    printf("*           UNTITLED RPG               *\n");
     printf("*                                      *\n");
     printf("****************************************\n");
     printf("\n");
@@ -248,7 +248,7 @@ int main(void)
 }
 ```
 
-The `UNTITLED JRPG` name is a deliberate placeholder — you haven't named
+The `UNTITLED RPG` name is a deliberate placeholder — you haven't named
 your kingdom or your hero yet. That happens at Checkpoint B, before Chapter
 13, once the game actually has a world worth naming. For now, this is just
 proof that `printf` can draw something that *feels* like a title screen.
@@ -265,7 +265,7 @@ Expected output:
 ```
 ****************************************
 *                                      *
-*          UNTITLED JRPG               *
+*           UNTITLED RPG               *
 *                                      *
 ****************************************
 
@@ -325,10 +325,10 @@ main.c:5:9: warning: unused variable ‘gold’ [-Wunused-variable]
 
 Unlike the missing-`#include` error above, this is only a **warning** — the
 compiler still produced `game`, and it would still run fine. That's exactly
-why "warnings are errors in spirit" (CLAUDE.md's phrase for this course):
-nothing forces you to fix this, but an unused variable is almost always a
-sign you forgot to do something with it. Get in the habit of reading every
-warning `gcc` prints, every time, even when the program "works."
+why "warnings are errors in spirit" (a maxim we will ingrain in you during
+this course): nothing forces you to fix this, but an unused variable is
+almost always a sign you forgot to do something with it. Get in the habit of
+reading every warning `gcc` prints, every time, even when the program "works."
 
 ## Exercises
 

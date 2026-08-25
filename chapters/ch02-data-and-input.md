@@ -12,7 +12,7 @@ screen.
 
 ## The problem
 
-A JRPG that can't ask your name isn't much of a JRPG. You need somewhere to
+An RPG that can't ask your name isn't much of an RPG. You need somewhere to
 put the answer once you have it, and you need a safe way to actually get it
 from the keyboard without either crashing on long input or reading
 `stdin` (the keyboard, from the program's point of view) wrong.
@@ -22,8 +22,8 @@ from the keyboard without either crashing on long input or reading
 ### The three types you'll use constantly
 
 ```c
-int hp = 20;        /* a whole number */
-char rank = 'E';     /* a single character */
+int   hp    = 20;   /* a whole number */
+char  rank  = 'E';  /* a single character */
 float power = 5.0f; /* a number with a fractional part */
 ```
 
@@ -57,7 +57,7 @@ int current_hp = 15;
 int max_hp = 20;
 
 int percent = current_hp / max_hp * 100;
-printf("%d%%\n", percent);   /* prints 0, not 75 */
+printf("%d%%\n", percent);   /* prints 0%, not 75% */
 ```
 
 `current_hp / max_hp` is `15 / 20`. Both operands are `int`, so C performs
@@ -72,7 +72,7 @@ different type for one expression.
 
 ```c
 float percent = (float)current_hp / max_hp * 100;
-printf("%.0f%%\n", percent);   /* prints 75 */
+printf("%.0f%%\n", percent);   /* prints 75% */
 ```
 
 `(float)current_hp` converts just that one value to a `float` *before* the
@@ -122,7 +122,7 @@ This course doesn't use it, for reasons worth knowing:
   `&` operator, which means "the address of this variable." That's the
   address-of operator, the foundation of pointers — a big topic this course
   gives its own chapter (7). Using it correctly right now, without that
-  foundation, would mean copying a spell you don't understand yet.
+  foundation, would be like invoking a spell you don't understand yet.
 - `scanf` leaves the newline character from your Enter key sitting unread
   in the input stream, which then silently corrupts the *next* read if
   you're not careful. It's a well-known trap even for people who've used
@@ -201,7 +201,7 @@ Type a name and press Enter. Expected output (typing `Elowen`):
 ```
 ****************************************
 *                                      *
-*          UNTITLED JRPG               *
+*           UNTITLED RPG               *
 *                                      *
 ****************************************
 
@@ -238,10 +238,20 @@ thing standing between you and a crash.
 
 **A mismatched format specifier — caught by the compiler:**
 
+If you change
+`printf("HP:     %d\n", hp);`
+to
+`printf("HP:     %s\n", hp);`
+and recompile with
+```bash
+gcc -std=c17 -Wall -Wextra -Wpedantic -g -o game main.c
 ```
-$ gcc -std=c17 -Wall -Wextra -Wpedantic -g -o badfmt badfmt.c
-badfmt.c: In function ‘main’:
-badfmt.c:6:18: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
+you'll see something like this:
+
+```
+$ gcc -std=c17 -Wall -Wextra -Wpedantic -g -o game main.c
+main.c: In function ‘main’:
+main.c:26:22: warning: format ‘%s’ expects argument of type ‘char *’, but argument 2 has type ‘int’ [-Wformat=]
     6 |     printf("HP: %s\n", hp);
       |                 ~^     ~~
       |                  |     |
@@ -253,12 +263,23 @@ badfmt.c:6:18: warning: format ‘%s’ expects argument of type ‘char *’, b
 This is only a *warning* — `gcc` still produced a program. Running it is a
 different story:
 
-```
-$ ./badfmt
+```bash
+$ ./game
 [nothing printed]
 $ echo $?
 139
 ```
+
+or
+
+```bash
+$ ./game
+zsh: exec format error: ./game
+$ echo $?
+126
+```
+
+Exit status 126 means that the command was found, but it could not be executed.
 
 Exit status 139 means the operating system killed the program with signal
 11 — a **segmentation fault**, the OS's way of saying "you tried to access
@@ -320,7 +341,7 @@ relevant.
    different from what you expect, and if so, is it the *same kind* of bug
    as the spotlight section's percentage example, or a different one? (Hint:
    check operator precedence for `+` and `/`, not just integer division.)
-4. *Open-ended:* Real JRPGs often show a title like "Elowen, Level 1
+4. *Open-ended:* Real RPGs often show a title like "Elowen, Level 1
    Wanderer" instead of a bare name. Using only what this chapter taught
    (types, `printf`, casting), sketch — in a comment, not necessarily
    working code — what additional stat or piece of data you'd need to make
@@ -354,7 +375,7 @@ relevant.
    "unnecessary" ones, are cheap insurance in C.
 
 4. No fixed answer — a `level` field would most naturally be an `int`
-   (whole numbers only, matches how levels work in nearly every JRPG), and
+   (whole numbers only, matches how levels work in nearly every RPG), and
    a `class` or `title` field ("Wanderer") would need to be text — which,
    given what this chapter taught, means another `char` buffer like `name`.
    Full support for a roster of *different* titles per class is really an
