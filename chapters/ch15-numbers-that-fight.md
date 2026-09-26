@@ -232,6 +232,16 @@ Returning `tests_failed != 0` from `main` makes the exit status non-zero
 on failure, which is what lets `make test` actually fail a build rather
 than printing sadly and succeeding.
 
+
+### Property tests beat golden numbers alone
+
+A single expected damage value can rot when the formula changes on
+purpose. A **monotonicity** check ("more defence never increases damage")
+survives retuning and still catches sign errors. Practice `03_monotonic`
+is that idea without the game binary; keep the same test in the chapter
+harness.
+
+
 ## Apply it
 
 Create `rng.h`/`rng.c` and `combat_math.h`/`combat_math.c` as shown above,
@@ -627,74 +637,30 @@ like a broken generator and is really a misplaced call.
 
 ## Exercises
 
-1. `combat_flee_chance` is implemented and tested but never called. Add a
-   "Test your nerve" menu item that rolls it against the practice dummy's
-   agility of 5 and reports whether you'd have escaped.
-2. Add a test asserting that `combat_base_damage` is **monotonic** in
-   defence: more defence must never produce *more* damage. Loop defence
-   from 0 to 200 and check each result is less than or equal to the
-   previous. Does the current implementation pass?
-3. Seed the generator from a fixed constant instead of `time(NULL)`,
-   rebuild, and run the game twice, swinging at the dummy five times each
-   run. Are the sequences identical? Why is that valuable for debugging,
-   and why would you not ship it?
-4. *Open-ended:* Checkpoint C's formula gives spells a flat power that
-   ignores physical defence. Sketch `combat_spell_damage` — what
-   parameters does it need, which existing pure functions can it reuse,
-   and what would you test about it that isn't already covered?
+> **Practice drills:** `code/ch15/practice/` (`01_clamp_damage`–
+> `04_xorshift_seed`; `make && make check`) before exercise 2. Pure math lives
+> in drills; the game only *wires* it. Do **not** delete the production damage
+> floor or rewrite flee maths inside `game.c` to "try something else."
+
+1. *Practice.* Complete the practice folder (damage floor, flee chance,
+   monotonicity, seeded RNG sequences).
+2. *Durable property.* Add the defence-monotonicity test to the real
+   combat test harness (same shape as practice `03`). Does current
+   `combat_base_damage` pass?
+3. *Wiring, not rewrite.* Expose flee chance somehow lasting (menu "Test
+   your nerve" is fine) — call existing `combat_flee_chance`, do not
+   reimplement in `game.c`.
+4. *Open-ended:* Sketch `combat_spell_damage` (ignore physical defence,
+   reuse variance). What properties would you test?
 
 <details>
 <summary>Solutions</summary>
 
-1. In `menu_items` add `"Test your nerve"`, and in the confirm handler:
-   ```c
-   int chance = combat_flee_chance(game->player.agility, 5);
-   int escaped = rng_range(&game->rng, 1, 100) <= chance;
-   char line[DIALOG_LINE_LEN];
-   snprintf(line, sizeof line, "%d%% to flee. You %s.",
-            chance, escaped ? "would have got away" : "would have been caught");
-   dialog_wrap(&game->dialog, line, TEXTBOX_WIDTH);
-   game->mode = MODE_DIALOG;
-   ```
-   With the hero's agility at 5 and the dummy's at 5, the chance is the
-   flat 50%.
-
-2. ```c
-   int previous = combat_base_damage(10, 0, 0);
-   for (int def = 1; def <= 200; def++) {
-       int current = combat_base_damage(10, 0, def);
-       CHECK(current <= previous);
-       previous = current;
-   }
-   ```
-   It passes. Damage decreases as defence rises and then flattens at the
-   floor of 1, which is exactly monotonic non-increasing. Monotonicity is
-   a good property to test because it catches whole classes of formula
-   error — a sign flip, a misplaced parenthesis — without your having to
-   predict specific values.
-
-3. The two runs produce identical sequences. That's valuable because a
-   bug report can carry a seed, and you can then reproduce the player's
-   exact fight on your machine — the single biggest practical argument
-   for owning your generator instead of using `rand()`. You wouldn't ship
-   a fixed seed because every player would get an identical game: the
-   same crits, the same misses, the same encounters. Seed from the clock
-   for real play, but *record* the seed so it can be replayed
-   (`CONTENT.md` §9.4 suggests storing it in the save file).
-
-4. ```c
-   int combat_spell_damage(Rng *rng, int spell_power, int magic_stat);
-   ```
-   It reuses `combat_apply_variance` directly — the variance band is the
-   same — but skips `combat_base_damage` entirely, since spells ignore
-   physical defence. Worth testing beyond what exists: that defence has
-   *no* effect (a property test comparing results across a range of
-   defence values would be meaningless here, precisely because defence
-   isn't a parameter — which is itself the point), that spell damage
-   respects the same floor of 1, and that a spell with zero power still
-   does something rather than nothing. Note this only becomes real at
-   Checkpoint D, which decides whether magic is an MP pool or FF1-style
-   charges.
+1. See `code/ch15/practice/solutions/`.
+2. Loop defence 0..200; `CHECK(current <= previous)`. Should pass.
+3. Menu item + `combat_flee_chance` + `rng_range` + dialog line.
+4. `combat_spell_damage(rng, power, magic_stat)`; floor at 1; variance
+   reused; defence not a parameter.
 
 </details>
 

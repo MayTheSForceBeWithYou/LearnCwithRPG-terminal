@@ -207,6 +207,30 @@ int main(void)
 `->` constantly from here on, anywhere a struct is reached through a
 pointer instead of held directly.
 
+
+### Arrays decay to pointers (preview you can feel now)
+
+When you pass an array to a function, what the function receives is a
+pointer to the first element — not a copy of the whole array:
+
+```c
+void fill(int *p, int n)
+{
+    for (int i = 0; i < n; i++) {
+        p[i] = i;          /* p[i] is *(p + i) */
+    }
+}
+
+int cells[4];
+fill(cells, 4);            /* same as fill(&cells[0], 4) */
+```
+
+That is why `fill` can modify `cells` in the caller without taking
+`int **` or returning anything. It is also why a function cannot recover
+the array's length from the pointer alone — you pass `n` separately.
+Practice drill `03_walk_array` makes the `p++` form muscle memory;
+`05_dangling_demo` shows the anti-pattern of returning `&local`.
+
 ## Apply it
 
 Fix `entity_move` for real. In `entity.h`, change its signature to take a
@@ -473,83 +497,43 @@ address or explicitly to `NULL`.
 
 ## Exercises
 
-1. In `read_command`, what would happen if you removed the `discard` loop
-   entirely (just `return (char)typed;` right after the first
-   `getchar()`)? Trace through what happens on the *second* call to
-   `read_command()` if the player typed `dd` (two characters) before
-   pressing Enter on the first move. Then try it for real.
-2. `map_is_walkable` takes plain `int x, int y`, not pointers — why is
-   that fine here, when `entity_move` needed a pointer to actually change
-   something? (Hint: what does `map_is_walkable` do with `x` and `y` —
-   does it need to modify the caller's values, or just read them?)
-3. Write a `swap` function: `void swap(int *a, int *b)` that exchanges the
-   values two pointers point at. Test it with two `int` variables in
-   `main`, confirming both actually swap. (This is one of the single most
-   common pointer exercises in any C course, for good reason — if this
-   one clicks, the whole chapter has clicked.)
-4. *Open-ended:* `entity_move` currently has no way to say "that move was
-   invalid" — the caller (`main`) checks `map_is_walkable` first and only
-   calls `entity_move` if it's safe. Could `entity_move` itself return
-   something indicating success or failure, so callers don't have to
-   remember to check first? Sketch the signature (you don't need to
-   implement it) — what type would the return value need, and does this
-   change what `dx`/`dy` mean if the move gets rejected partway?
+> **Practice drills:** `code/ch07/practice/` — complete `01_swap` through
+> `05_dangling_demo` before exercise 3. Do not paste solutions into
+> `entity.c` to skip the reps.
+
+1. In `read_command`, what happens if you remove the `discard` loop
+   entirely? Trace the *second* call after the player types `dd` then
+   Enter on the first move. Try it, then restore the loop.
+2. `map_is_walkable` takes plain `int x, int y`, not pointers — why is that
+   correct when `entity_move` needs a `Player *`?
+3. *Practice (required) + durable API sketch.* Finish the practice folder.
+   Then sketch (or implement in a branch you keep) an `entity_move` that
+   returns success/failure so callers need not remember `map_is_walkable`
+   first — without removing the map check from the lasting design. What
+   return type? Who owns the walkability policy?
+4. *Open-ended:* Could `entity_move` take a function pointer
+   `int (*walkable)(int,int)` so the same mover works for different maps
+   later? Sketch the signature. (You need not implement it until function
+   pointers are official curriculum.)
 
 <details>
 <summary>Solutions</summary>
 
-1. Without the discard loop, the leftover `d` (from typing `dd` and
-   pressing Enter) sits unread in the input stream. The *next* call to
-   `read_command()` would immediately read that leftover `d` with its
-   first `getchar()` — silently consuming a "move" the player never
-   actually intended to make on that turn — before the newline is finally
-   consumed on some later call, at which point everything gets
-   desynchronized from what the player thinks they've typed. This is the
-   exact same leftover-input problem Chapter 3 introduced with `ask_call`,
-   now costing you actual gameplay correctness instead of just a
-   re-prompt.
-
-2. `map_is_walkable` only ever *reads* `x` and `y` to compute a yes/no
-   answer — it never needs to change what the caller's coordinates are.
-   Pointers exist specifically for when a function needs to modify the
-   caller's data (or, later, avoid copying something large); passing
-   plain `int`s by value is completely correct, and arguably clearer,
-   whenever a function only needs to look at a value, never change it.
-   Reaching for a pointer when a plain value would do is a common
-   over-correction once pointers start to click — resist it.
-
-3. ```c
-   void swap(int *a, int *b)
-   {
-       int temp = *a;
-       *a = *b;
-       *b = temp;
-   }
-
-   int main(void)
-   {
-       int x = 1, y = 2;
-       swap(&x, &y);
-       printf("x = %d, y = %d\n", x, y);   /* x = 2, y = 1 */
-       return 0;
-   }
-   ```
-   The `temp` variable is essential — without it, `*a = *b;` would
-   overwrite `a`'s original value before you had a chance to give it to
-   `b`, losing it permanently. This three-line dance (save, overwrite,
-   restore-from-save) is a pattern you'll reuse constantly.
-
-4. A reasonable sketch: `int entity_move(Player *p, int dx, int dy)`,
-   returning `1` for a successful move and `0` for a rejected one — but
-   this immediately raises the question you're meant to notice: for
-   `entity_move` to *know* whether a move is valid, it would need to ask
-   the map itself, which means `entity.c` would need to `#include
-   "map.h"` and know about map internals it currently doesn't. That's a
-   real design tradeoff (a module boundary question, not a pointers
-   question) — there's no single right answer yet, and you're not
-   expected to resolve it now. Keeping the check in `main` for now, as
-   this chapter did, is a legitimate choice, not a shortcut you'll
-   necessarily regret.
+1. Leftover `d` stays in the input stream; the next `read_command` consumes
+   it as a phantom move. Same leftover-input bug as Chapter 3, now in
+   gameplay.
+2. `map_is_walkable` only *reads* coordinates to compute a yes/no — pass
+   by value is right. Pointers are for modifying caller data (or avoiding
+   large copies). Over-using pointers once they click is a common
+   over-correction.
+3. Practice solutions under `code/ch07/practice/solutions/`. A reasonable
+   lasting sketch: `int entity_try_move(Player *p, int dx, int dy)` that
+   calls `map_is_walkable` internally and returns 0/1 — keeps policy in
+   one place. Plain `entity_move` can remain the unchecked primitive if
+   you want both.
+4. `void entity_move_on(Player *p, int dx, int dy, int (*walkable)(int,int));`
+   — or return `int`. Chapter 14's dispatch tables are the same idea at
+   mode scale.
 
 </details>
 

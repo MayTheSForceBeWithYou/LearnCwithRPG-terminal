@@ -12,7 +12,7 @@ typing matter. By the end, your project has its first real file — `main.c`
 
 ## The problem
 
-You can't build a JRPG without understanding the two lines every C program
+You can't build a RPG without understanding the two lines every C program
 starts from: the function that runs first, and the call that put text on
 your screen in Chapter 0. Right now those are magic incantations you copied.
 Magic incantations break in ways you can't fix. Let's fix that before you
@@ -224,8 +224,8 @@ Time to start the actual project. Everything in this course from here on
 lives in a real directory — not the scratch files from Chapter 0.
 
 ```bash
-mkdir -p ~/projects/jrpg
-cd ~/projects/jrpg
+mkdir -p ~/projects/rpg
+cd ~/projects/rpg
 ```
 
 Create `main.c`:

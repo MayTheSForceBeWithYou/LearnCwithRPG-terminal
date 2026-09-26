@@ -16,7 +16,7 @@ your first memory bugs, on purpose, and find them.
 `static const char world[20][41]` has three limitations you can't
 negotiate away: its size is a compile-time constant, it exists for the
 entire life of the program whether you need it or not, and there's exactly
-one of it. A real JRPG loads a map when you enter an area and releases it
+one of it. A real RPG loads a map when you enter an area and releases it
 when you leave, with maps of different sizes, several of them, chosen at
 runtime. All of that requires asking the operating system for memory
 during execution — and taking on the responsibility of giving it back.
@@ -283,6 +283,18 @@ gdb numbering its answers so you can refer back to them.
 
 ASan tells you *that* something is wrong and where. gdb lets you stop time
 and look around. You'll want both.
+
+
+### Partial failure and nested ownership
+
+When `map_create` allocates the `Map` and then `tiles`, a failed second
+allocation must `free` the first before returning `NULL`. Leaving the
+`Map` orphaned is a leak that never shows up in the happy path — practice
+`02_null_check` and `04_owner_pair` exist so that cleanup order is boring
+before sanitizers yell at you in the full game.
+
+Rule of thumb: **destroy in reverse order of create**, and write the
+failure branches at the same time as the success path, not "later."
 
 ## Apply it
 
@@ -595,106 +607,36 @@ is a library, and libraries must appear when linking. Add
 
 ## Exercises
 
-1. Delete the `map_destroy(map)` call at the end of `main`, rebuild with
-   sanitizers, and run. What does LeakSanitizer report, and how many bytes
-   does it say leaked? Does it report one leak or two? (Think about
-   whether losing the pointer to `map` also loses the pointer to
-   `map->tiles`.) Put the call back afterward.
-2. In `map_create`, delete the `free(map)` from the `tiles == NULL`
-   failure branch. Does the program behave any differently in normal use?
-   Why is this bug so much harder to notice than the one in exercise 1?
-3. Add a `map_create_sized(int width, int height)` function that allocates
-   a map of any requested size, filled entirely with floor tiles except
-   for a wall border. Have `map_create` become a thin wrapper that calls
-   it. (This is the change that makes runtime-sized maps genuinely useful,
-   and it's a step toward Chapter 11, where maps come from files.)
-4. *Open-ended:* The `Map` struct owns its `tiles` allocation. If you
-   later add an `Npc` array to `Map` (Chapter 13 will), what would
-   `map_destroy` need to do, and what would go wrong if two different
-   `Map`s ever pointed at the *same* `tiles` block? Sketch the ownership
-   rule you'd want written in the header comment.
+> **Practice drills:** `code/ch10/practice/` (`01_malloc_free`–
+> `04_owner_pair`) before exercise 3. Leak/UAF experiments on the *game*
+> binary are fine as temporary checks — put the calls back afterward.
+
+1. Delete `map_destroy(map)` at the end of `main`, rebuild with
+   sanitizers, run. How many leaks? Direct vs indirect? Put the call back.
+2. In `map_create`, delete `free(map)` from the `tiles == NULL` failure
+   branch. Does normal play look different? Why is this harder to notice
+   than exercise 1? Restore it. (Also run practice `02_null_check`.)
+3. *Durable API.* Add `map_create_sized(int width, int height)` (floor
+   fill + wall border); make `map_create` a thin wrapper. This is the
+   lasting step toward Chapter 11 file-loaded maps — keep it. Rehearse the
+   shape with practice `04_owner_pair` first if you want.
+4. *Open-ended:* If `Map` later owns an NPC array, what must `map_destroy`
+   do? What goes wrong if two `Map`s share one `tiles` block? Write the
+   ownership sentence you'd put in the header.
 
 <details>
 <summary>Solutions</summary>
 
-1. LeakSanitizer reports **two** leaks totaling 816 bytes:
-
-   ```
-   Direct leak of 16 byte(s) in 1 object(s) allocated from:
-       #1 ... in map_create map.c:34
-       #2 ... in main main.c:45
-
-   Indirect leak of 800 byte(s) in 1 object(s) allocated from:
-       #1 ... in map_create map.c:42
-       #2 ... in main main.c:45
-
-   SUMMARY: AddressSanitizer: 816 byte(s) leaked in 2 allocation(s).
-   ```
-
-   Two allocations, because `map_create` made two. Losing the pointer to
-   `map` doesn't free `map->tiles`; it just makes it unreachable, which is
-   precisely what a leak *is*. Note the classification: the 16-byte `Map`
-   is a **direct** leak (nothing points at it any more), while the
-   800-byte tile block is an **indirect** leak (something still points at
-   it — but that something is itself leaked). When you see indirect leaks,
-   fix the direct one first; the indirect ones usually disappear with it.
-
-2. In normal use, nothing changes at all — that branch only runs if the
-   second `malloc` fails, which essentially never happens for an 800-byte
-   request on a modern machine. That's exactly what makes it dangerous:
-   the bug is real, it's in shipped code, and no amount of ordinary
-   testing will ever execute the line. Error paths need to be *reasoned*
-   correct, not tested correct, because you usually can't trigger them on
-   demand. (Tools exist to force allocation failures for exactly this
-   reason.)
-
-3. ```c
-   Map *map_create_sized(int width, int height)
-   {
-       if (width <= 0 || height <= 0) {
-           return NULL;
-       }
-
-       Map *map = malloc(sizeof *map);
-       if (map == NULL) {
-           return NULL;
-       }
-
-       map->width = width;
-       map->height = height;
-       map->tiles = malloc((size_t)width * (size_t)height);
-       if (map->tiles == NULL) {
-           free(map);
-           return NULL;
-       }
-
-       for (int y = 0; y < height; y++) {
-           for (int x = 0; x < width; x++) {
-               int edge = (x == 0 || y == 0 ||
-                           x == width - 1 || y == height - 1);
-               map->tiles[(size_t)y * (size_t)width + (size_t)x] =
-                   edge ? '#' : '.';
-           }
-       }
-
-       return map;
-   }
-   ```
-   The `width <= 0` check matters: `malloc(0)` is legal but returns
-   something you must not dereference, and negative dimensions would
-   produce a nonsensical (and possibly enormous, after conversion to
-   `size_t`) allocation size.
-
-4. `map_destroy` would need to free the NPC array before freeing `map`,
-   same ordering rule as `tiles`. If two `Map`s shared one `tiles` block,
-   destroying either would leave the other holding a dangling pointer, and
-   destroying both would be a double-free — both undefined behaviour. The
-   ownership rule to write down: *"A `Map` exclusively owns its `tiles`
-   and `npcs` allocations. Do not copy a `Map` struct by assignment;
-   copying the struct copies the pointers, not the memory, producing two
-   owners for one allocation."* That last sentence is the real trap, and
-   it's a direct consequence of Chapter 6's lesson that struct assignment
-   copies every byte — including pointer members.
+1. Typically two leaks (direct `Map`, indirect `tiles`). Fix the direct
+   owner first; indirect often vanishes with it.
+2. Happy path unchanged — failure branch never runs. That's why drills and
+   deliberate fault injection matter.
+3. Allocate `Map`, then `width*height` tiles; on failure free what you
+   already got; draw a `#` border and `.` interior. Wrapper:
+   `return map_create_sized(MAP_WIDTH, MAP_HEIGHT);` (or your constants).
+4. Free NPCs (or their storage) before tiles before the struct. Shared
+   `tiles` without a shared-ownership protocol → double-free or use-after-
+   free. Prefer unique ownership unless you have a clear refcount story.
 
 </details>
 

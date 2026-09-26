@@ -147,6 +147,17 @@ irrelevant; if you ever had four thousand you'd want something smarter.
 Choosing the simple thing deliberately, and knowing why it's fine, beats
 reaching for a hash table because it sounds more professional.
 
+
+### Validate data before you trust coordinates
+
+Lookup tables move bugs from "wrong code" into "wrong row in a table."
+That is a win only if something checks the rows. A startup
+`world_validate` that every NPC and warp sits on a walkable tile turns
+mysterious in-game softlocks into a clear stderr line on launch. Practice
+`03_validate_coords` is the miniature; exercise 2 asks for the real one —
+keep it in the lasting tree.
+
+
 ## Apply it
 
 ### Three map files
@@ -601,94 +612,29 @@ tradeoff for data-driven design and the motivation for exercise 2.
 
 ## Exercises
 
-1. Add a fourth area — Mudwick, the town gated behind Fragment I in the
-   Checkpoint B outline. You'll need a map file, an `AREA_MUDWICK` entry
-   in the enum (before `AREA_COUNT`), a row in `area_table`, and warps at
-   both ends. How many *existing* lines of code did you have to change, as
-   opposed to data you added?
-2. Write a validation function, `world_validate`, that checks at startup
-   that every NPC stands on a walkable tile and every warp both sits on a
-   door and lands somewhere walkable — printing a clear message and
-   returning failure otherwise. (This is genuinely worth doing: the real
-   `code/ch13/` was developed alongside exactly such a test, which caught
-   two bad coordinates before they ever became mysterious in-game bugs.)
-3. `world_npc_at` and `world_warp_at` are nearly identical linear
-   searches. Could they share code? Try writing a single generic
-   search, then decide whether the result is actually clearer than two
-   short obvious functions. (There isn't a single right answer — the
-   judgment is the exercise.)
-4. *Open-ended:* Right now every map is loaded at startup and kept in
-   memory forever. For three small maps that's fine. Sketch what would
-   change if the world had forty areas: when would you load, when would
-   you free, and what would you need to be careful about with the
-   `Map *` the player is currently standing on?
+> **Practice drills:** `code/ch13/practice/` (`01_enum_index`–
+> `04_count_slots`) before exercise 2.
+
+1. *Practice.* Complete the practice folder (enum index, linear search,
+   validate, count+slots).
+2. *Durable — `world_validate`.* Implement startup validation: every NPC
+   on a walkable tile; every warp on a door tile and destination walkable.
+   Fail loudly. Keep this function — it is how `code/ch13/` stayed honest.
+3. *Data, not code — optional area.* Add Mudwick (map file, `AREA_*`
+   before `AREA_COUNT`, `area_table` row, warps both ways). Count how many
+   *existing* functions you changed vs data you added. Prefer this after
+   validate exists.
+4. *Open-ended:* Forty areas — when load, when free, what about the
+   `Map *` under the player's feet? Sketch ownership without implementing.
 
 <details>
 <summary>Solutions</summary>
 
-1. Almost none. You add: a map file, one enum entry, one `area_table`
-   row, and warp entries pointing at it (plus a warp in Mudwick pointing
-   back). You *change*: nothing in `main.c`, nothing in `world.c`'s
-   functions, nothing in the renderer. `AREA_COUNT` grows automatically,
-   so the arrays resize themselves. That ratio — lots of data, no code —
-   is the entire argument for lookup tables, and it's why Chapter 21 goes
-   further and moves the table itself into a file.
-
-2. ```c
-   int world_validate(const World *world)
-   {
-       int problems = 0;
-
-       for (int i = 0; i < AREA_COUNT; i++) {
-           const Area *area = &world->areas[i];
-
-           for (int n = 0; n < area->npc_count; n++) {
-               if (!map_is_walkable(world->maps[i],
-                                    area->npcs[n].x, area->npcs[n].y)) {
-                   fprintf(stderr, "%s: npc %d is inside a wall at (%d,%d)\n",
-                           area->name, n, area->npcs[n].x, area->npcs[n].y);
-                   problems++;
-               }
-           }
-
-           for (int k = 0; k < area->warp_count; k++) {
-               const Warp *w = &area->warps[k];
-               if (!map_is_walkable(world->maps[w->destination],
-                                    w->destination_x, w->destination_y)) {
-                   fprintf(stderr, "%s: warp %d lands in a wall\n",
-                           area->name, k);
-                   problems++;
-               }
-           }
-       }
-
-       return problems == 0;
-   }
-   ```
-   Call it right after `world_create` and refuse to start if it fails.
-   Data that can't be type-checked should be *value*-checked instead, as
-   early as possible — the same principle as Chapter 11's map validation,
-   applied to data you wrote yourself rather than data from a file.
-
-3. A generic version would need to compare different member offsets on
-   different types, which in C means either a `void *` array with an
-   element size and a comparison callback (function pointers — Chapter
-   14) or a macro. Both are noticeably harder to read than the two
-   six-line functions they'd replace. For two call sites, the duplication
-   is the better choice. The general lesson: deduplication has a cost in
-   indirection, and two similar short functions are often cheaper than
-   one clever general one. Revisit if a third and fourth appear.
-
-4. With forty areas you'd load lazily — `map_load` on entering an area,
-   `map_destroy` on leaving — keeping perhaps the current area plus its
-   immediate neighbours resident. Two things to be careful about: you must
-   not free the map the player is currently standing on (any cached
-   `Map *` elsewhere in the code becomes dangling the instant you do —
-   Chapter 10's use-after-free, arriving through a design decision rather
-   than a typo), and loading on transition puts file I/O on the critical
-   path of walking through a door, which is where "loading screens" come
-   from. A middle ground is a small cache with a cap, freeing the
-   least-recently-visited area when full.
+1. See `code/ch13/practice/solutions/`.
+2. Loop areas → NPCs / warps; `map_is_walkable`; fprintf + nonzero return.
+3. Almost no function edits — enum + table + files. That ratio is the point.
+4. Lazy load on enter; destroy previous when leaving; never free the active
+   map until the replacement is loaded (or use a double-buffer swap).
 
 </details>
 

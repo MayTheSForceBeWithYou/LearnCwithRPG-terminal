@@ -1,0 +1,5 @@
+# level effect name
+1 heal Mend
+2 damage Ember
+5 cure Cleanse
+18 damage Sunder

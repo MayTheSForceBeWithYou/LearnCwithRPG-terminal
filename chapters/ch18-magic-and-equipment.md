@@ -258,6 +258,16 @@ MP is deducted **before** the effect runs and only after every check has
 passed, so there is no path where a spell fires for free or charges you
 for a spell that didn't happen.
 
+
+### Effect tables and per-fighter resources
+
+Spell *kinds* are function pointers (or a switch) keyed by table rows —
+adding a row should not edit the battle loop. Resources that change during
+a fight (ward absorption left) live on the fighter, not in `spell_table`
+(which is immutable definition data). Practice `03_ward_pool` before you
+move ward HP onto `Player`.
+
+
 ## Apply it
 
 ### Equipment, and one place to read a stat
@@ -595,74 +605,23 @@ name after introducing an accessor and confirm every hit is intentional.
 
 ## Exercises
 
-1. Add a spell. Pick a name in the content bible's register, give it a
-   level, MP cost and magnitude, and add one row to `spell_table`. How
-   many other files did you change?
-2. Add a *kind* of spell: `effect_drain`, which damages the target and
-   heals the caster for half the damage dealt. This one needs a new
-   function — what does it need from `SpellContext` that the existing
-   effects don't, and does the struct already provide it?
-3. `STATUS_WARDED` currently absorbs one hit and breaks. Change it to
-   absorb a fixed 80 damage total (as `CONTENT.md` describes) rather than
-   one whole blow. Where does the remaining-absorption number have to
-   live, and why can't it live in `spell_table`?
-4. *Open-ended:* Equipment is currently free — the gear screen cycles
-   through everything in the table. Chapter 19 adds shops and gold.
-   Sketch what has to change so the hero can only equip what they own,
-   and note which existing structure (from Chapter 17) already does most
-   of the work.
+> **Practice drills:** `code/ch18/practice/` before exercise 2.
+
+1. *Practice.* Effect table, drain, ward pool, equip-only-if-owned.
+2. *Durable — new spell row.* Add one spell to `spell_table` only. How many
+   other files changed? (Aim: zero.)
+3. *Durable — drain kind or ward pool.* Implement either `effect_drain`
+   **or** pooled ward HP (80) as lasting behaviour — rehearse in practice
+   first.
+4. *Open-ended:* Equip only owned gear using Chapter 17 inventory.
 
 <details>
 <summary>Solutions</summary>
 
-1. One file, `magic.c`, and one line in it. Nothing else — not the menu,
-   not the battle code, not the renderer. `magic_spell_count` derives from
-   `sizeof`, `magic_known_count` counts a prefix, and the spell screen
-   loops to whatever those return. That ratio is the whole argument for
-   table-driven design, and it's the same result as Chapter 13's exercise
-   about adding an area.
-
-2. ```c
-   static void effect_drain(const Spell *spell, SpellContext *ctx)
-   {
-       int roll = rng_range(ctx->rng, 0, 2 * COMBAT_VARIANCE_PERCENT);
-       int damage = combat_apply_variance(spell->magnitude, roll);
-
-       *ctx->target_hp -= damage;
-
-       ctx->caster->hp += damage / 2;
-       if (ctx->caster->hp > ctx->caster->max_hp) {
-           ctx->caster->hp = ctx->caster->max_hp;
-       }
-
-       snprintf(ctx->message, sizeof ctx->message,
-                "%s drains %d.", spell->name, damage);
-   }
-   ```
-   It needs both `caster` and `target_hp` at once — and the context
-   already has both, because it was built to carry everything any effect
-   might want rather than the minimum each one needs. That's the payoff
-   for bundling the parameters. You would also need to add it to
-   `magic_needs_target`, which currently identifies targeted spells by
-   comparing function pointers — a hint that a `needs_target` field on the
-   struct would scale better than that comparison.
-
-3. It has to live on the `Player`, next to `status` — something like
-   `int ward_remaining;`. It cannot live in `spell_table` because the
-   table is `static const` shared data describing *what Ward is*, not
-   mutable per-cast state describing *this hero's current ward*. Writing
-   to it would be writing to shared read-only data, which is exactly the
-   `const char *` lesson from Chapter 12 in a new place. The general
-   principle: tables hold definitions, entities hold instances.
-
-4. `Inventory` from Chapter 17 already does most of the work — it's a
-   dynamic array of `{id, quantity}` that grows as you acquire things.
-   The cleanest route is to give gear item IDs so owned equipment lives in
-   the same inventory as potions, and have the gear screen list only slots
-   the hero actually holds. The alternative — a separate owned-gear array
-   per slot — duplicates the growth logic you already wrote and tested.
-   Reusing the inventory also means Chapter 20 serialises one structure
-   instead of two.
+1. See practice `solutions/`.
+2. Ideally only `magic.c` (or the data file in later chapters).
+3. Drain needs caster + target HP on context; ward_left on the fighter.
+4. Inventory already tracks ownership — gear UI filters through it.
 
 </details>
 

@@ -146,6 +146,14 @@ writing your own. The shape is always the same: a return type, a name,
 parameters in parentheses, and a body in braces. `void` as a return type
 means "returns nothing"; you'll write one of those shortly.
 
+
+### `for` vs `while` — same machine, different emphasis
+
+A `for` packs init/test/step where counting is the point; a `while` shines
+when the end condition is "until valid input" or "until newline." Practice
+both shapes (`02_while_countdown`, `03_for_sum`) so neither feels exotic.
+
+
 ## Apply it
 
 Add three functions above `main`, then call the last one from `main`.
@@ -404,64 +412,23 @@ thing to suspect.
 
 ## Exercises
 
-1. In `ask_call`, what happens if you type more than one character before
-   pressing Enter — for example, typing `hello` instead of `h`? Trace
-   through the code by hand first, then try it and see if you predicted
-   correctly.
-2. Add a third loop iteration variant: rewrite the `for` countdown as a
-   `while` loop that does the exact same thing. Which version do you find
-   more readable, and why do you think `for` exists as a separate construct
-   at all instead of everyone just using `while`?
-3. `run_duel` currently only supports a heads/tails duel. Add a
-   `best_of_three` variant conceptually (you don't have to fully build it):
-   what would need to change about `flip_coin`'s fakeness for a
-   best-of-three duel to feel meaningfully different from calling
-   `run_duel` three times in a row? (You're not expected to solve the
-   randomness problem — just identify what breaks.)
-4. *Open-ended:* This chapter's duel has exactly one possible outcome per
-   run, since the coin is fixed. If you could add one more `if`/`switch`
-   branch to make the duel feel more like *your* game's tone (see
-   Checkpoint B, coming soon) — a taunt, a special outcome on a specific
-   call — what would it say?
+> **Practice drills:** `code/ch03/practice/` before exercise 2.
+
+1. *Practice.* Switch validation, while countdown, for sum, first-char idea.
+2. *Reading.* In `ask_call`, type `hello` — which char is the call? Trace
+   the discard loop (practice `04` is the miniature).
+3. *Durable tone (optional).* One extra `if`/`switch` branch for a taunt or
+   special outcome — lasting flavour, not a rewrite of the coin.
+4. *Open-ended:* What must change about a fake coin for best-of-three to
+   feel different from calling `run_duel` three times?
 
 <details>
 <summary>Solutions</summary>
 
-1. `getchar()` only ever reads the *first* character you typed — here,
-   `'h'`. The switch matches it and sets `call = 'h'` immediately. The
-   inner `while (typed != '\n' && typed != EOF)` loop then discards
-   everything else on the line (`ello` and the newline) one character at a
-   time via repeated `getchar()` calls, so the extra letters are silently
-   thrown away rather than causing an error or getting reinterpreted as a
-   second call. The duel proceeds exactly as if you'd typed just `h`.
-
-2. ```c
-   int i = 3;
-   while (i >= 1) {
-       printf("  %d...\n", i);
-       i--;
-   }
-   ```
-   Functionally identical output. `for` exists because "set up a counter,
-   check it, step it" is such a common pattern that bundling all three
-   parts on one line makes the loop's *entire lifecycle* visible at a
-   glance — with `while`, the setup and the step can be far apart (or,
-   per the infinite-loop error above, accidentally missing entirely),
-   which is a common source of bugs `for` structurally prevents.
-
-3. The core problem: `flip_coin` always returns the same result, so
-   calling `run_duel()` three times wouldn't produce three independent
-   coin flips — it would produce the same flip three times, making
-   "best of three" meaningless (you'd win 3-0 or lose 0-3, never
-   anything else). A real best-of-three needs `flip_coin` to genuinely
-   vary between calls, which is precisely the randomness problem this
-   chapter deferred to Chapter 15. This exercise has no code to write yet
-   — the honest answer is "this feature is blocked on a concept you don't
-   have," which is itself a useful thing to be able to recognize.
-
-4. No fixed answer — this is a taste exercise. Keep whatever you come up
-   with; Checkpoint B is coming up in a few chapters and will ask you to
-   think about tone more formally.
+1. Practice solutions.
+2. First char only; rest discarded until newline.
+3. Local string/branch in duel — keep it small.
+4. Need real variation between flips — fixed coin makes Bo3 identical.
 
 </details>
 

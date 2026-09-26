@@ -146,6 +146,16 @@ Reading `index` as an `ItemId` when it's really a gear index would index
 the wrong table entirely — and both are `int`, so nothing warns you. The
 tag is the only thing standing between you and that bug.
 
+
+### Price at the compute site, save at the call site
+
+Discounts belong where the price is *computed* (`shop_entry_price`) so the
+list and the charge never disagree. Inns that also save belong at the
+**call site** that has a whole `Game`, not inside `shop_rest(Player *)` —
+keeping rest narrow avoids a dependency cycle and keeps Chapter 20's save
+module optional to the shop ADT. Practice `03` and `04` encode both rules.
+
+
 ## Apply it
 
 ### Shops as data, again
@@ -435,69 +445,24 @@ pass the size alongside the buffer.
 
 ## Exercises
 
-1. Add selling. `CONTENT.md` says sell price is 50% of buy price
-   throughout. Where does the "check everything, then commit" ordering
-   apply differently when *removing* an item rather than adding one?
-2. The Guild Signet gives a 10% shop discount. Implement it — where does
-   the discount belong, `shop_entry_price` or `shop_buy`, and what breaks
-   if you choose the wrong one?
-3. `shop_rest` restores HP and MP but doesn't save the game. `CONTENT.md`
-   describes inns as the save point, Dragon Warrior style. What would
-   `shop_rest` need to know about in order to save, and why is that a
-   reason to *not* put the save call inside it?
-4. *Open-ended:* Prices are fixed forever. Sketch a scheme where prices
-   respond to something — the area you're in, how far the wards have
-   failed, what you've already bought. What would you need to store, and
-   what would you have to be careful about when Chapter 20 starts saving
-   the game?
+> **Practice drills:** `code/ch19/practice/` before exercise 2.
+
+1. *Practice.* Buy commit, sell commit, discount price, rest-without-save.
+2. *Durable — selling.* Implement sell at 50% buy price; remove first, then
+   pay; refuse key items.
+3. *Durable — discount.* Guild Signet 10% in `shop_entry_price` (display +
+   charge). Not only inside `shop_buy`.
+4. *Open-ended:* Dynamic prices — what to store, and what Chapter 20 must
+   save. (Do **not** call `save_write` from `shop_rest`.)
 
 <details>
 <summary>Solutions</summary>
 
-1. The ordering is the same principle but the fallible step swaps places.
-   Adding: the *storage* can fail, so store first and charge second.
-   Selling: the *removal* is what can fail (you might not own the item),
-   so verify ownership and remove first, then pay:
-   ```c
-   if (!inventory_remove_one(inv, id)) {
-       snprintf(reason, reason_size, "You do not have one.");
-       return 0;
-   }
-   player->gold += shop_entry_price(entry) / 2;
-   ```
-   You'd also want to refuse key items outright — `item_type(id)->key_item`
-   already marks them (Chapter 17), and selling the Brass Key would strand
-   the player exactly as using it would have.
-
-2. It belongs in `shop_entry_price`, so the discounted number is what the
-   player *sees* in the list as well as what they're charged. Putting it
-   in `shop_buy` means the display shows 120 and the purchase deducts 108
-   — the player is pleasantly surprised rather than informed, and any
-   "can I afford this?" reasoning they do from the screen is wrong. The
-   general rule: apply price modifiers where the price is *computed*, not
-   where it's *spent*, so display and behaviour cannot diverge.
-   (`shop_entry_price` would then need access to the player, which is a
-   signature change worth making deliberately.)
-
-3. It would need the whole `Game` — the world, the player, the inventory,
-   the RNG seed — because a save file contains all of it. That is a strong
-   argument for *not* saving inside `shop_rest`: the function currently
-   knows about exactly two things (`Shop` and `Player`) and is trivially
-   testable because of it. Handing it the entire game state to enable one
-   side effect would couple the shop module to everything. Better: let
-   `shop_rest` return success, and have the *caller* — which already holds
-   the `Game` — trigger the save. Same reasoning as `dialog.c` returning a
-   value instead of changing the game mode itself (Chapter 12's exercise 3).
-
-4. No fixed answer. A per-area price multiplier is the cheapest version
-   and fits the existing `Shop` struct. Something dynamic — prices rising
-   as the wards fail — means storing a world state number somewhere, and
-   the Chapter 20 warning is this: **anything that affects prices must be
-   in the save file, or a reload silently changes the economy.** More
-   generally, every piece of mutable state you add from here on is
-   something Chapter 20 has to serialise, which is a good reason to be
-   deliberate about adding it. State that lives only in memory is state
-   that disappears on load.
+1. Practice solutions.
+2. `inventory_remove_one` then `gold += price/2`.
+3. `price - price/10` (or equivalent) in the price helper.
+4. Per-area multipliers or purchase counts; persist whatever affects
+   reloads.
 
 </details>
 

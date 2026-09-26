@@ -12,11 +12,11 @@ typedef enum {
 
 typedef struct {
     char name[64];
-    int x;
+    int x;              /* coordinates can be negative (offsets, wrapping) */
     int y;
-    int hp;
-    int mp;
-    int attack;
+    int hp;             /* could use unsigned; kept as int for arithmetic */
+    int mp;             /* (damage deltas, library interop, avoiding casts) */
+    int attack;         /* see Chapter 2's "note on type choices" */
     int defense;
     Rank rank;
 } Player;

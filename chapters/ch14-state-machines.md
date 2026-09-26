@@ -185,6 +185,16 @@ Use dispatch tables when the set of states is open-ended and each one is
 substantial. Use a `switch` when there are three tiny cases that will never
 grow. Chapter 13's mode handling was the former pretending to be the latter.
 
+
+### Fail closed on the dispatch table
+
+A `NULL` `draw` or `handle` is a landmine that detonates only when a player
+reaches that mode. `game_validate_modes` at startup (practice
+`03_validate_handlers`, then the real function) fails the run before any
+input. Same spirit as Chapter 13's world validate: table-driven systems
+need table-shaped checks.
+
+
 ## Apply it
 
 ### The `Game` struct
@@ -377,7 +387,7 @@ many elements are in this array" — total bytes divided by bytes per element.
 It only works on a real array, not a pointer (where `sizeof` would give the
 pointer's size), so it's safe here but would silently break if `menu_items`
 were passed into a function first. The wrap-around arithmetic means pressing
-up on the first item lands on the last, which is what every JRPG menu does.
+up on the first item lands on the last, which is what every RPG menu does.
 
 ### The game loop, finally
 
@@ -550,98 +560,31 @@ table (which nothing checks). Exercise 2 is about buying that safety back.
 
 ## Exercises
 
-1. Add a fourth menu item, "Party", that shows a line about traveling alone
-   — you chose a solo hero at Checkpoint B, so this is the honest answer.
-   How many files did you touch?
-2. The dispatch table has no compile-time guarantee that every mode is
-   filled in. Write a `game_validate_modes` function that runs at startup
-   and checks every entry of `mode_table` for a `NULL` `draw` or `handle`,
-   refusing to start if any are missing. Why is this better than
-   discovering the problem when the player first opens that mode?
-3. Add a `MODE_GAME_OVER` that draws a message and accepts only `q`. Then
-   count: how many *existing* functions did you have to modify? Compare
-   that honestly to what the same addition would have cost in Chapter 13's
-   nested `switch`.
-4. *Open-ended:* Right now a mode change is a bare assignment
-   (`game->mode = MODE_DIALOG`). Real state machines often need to run code
-   *on entering* and *on leaving* a state — resetting `menu_index` when the
-   menu opens, for instance. Sketch how you'd extend `ModeHandler` to
-   support `on_enter`/`on_exit`, and what `game_set_mode` would look like.
+> **Practice drills:** `code/ch14/practice/` (`01_fnptr_basics`–
+> `04_tiny_fsm`) before exercise 2. Learn the FSM shape in the tiny harness
+> — do not rip up `game.c`'s table as an experiment.
+
+1. *Practice.* Finish all four drills, especially `04_tiny_fsm`.
+2. *Durable — validate modes.* Implement `game_validate_modes` (non-NULL
+   `draw`/`handle` for every `MODE_*`). Call it from startup; refuse to
+   run on failure.
+3. *Durable — new mode.* Add `MODE_GAME_OVER` (message, only `q`). Count
+   how many *existing* functions you modified vs Chapter 13's nested
+   `switch`. (Menu item "Party" is optional content — fine as data in
+   `menu_items`, not a substitute for the mode validate.)
+4. *Open-ended:* Sketch `on_enter` / `on_exit` on `ModeHandler` and a
+   `game_set_mode` that runs them. Resetting `menu_index` on menu open is
+   the motivating example.
 
 <details>
 <summary>Solutions</summary>
 
-1. One file, `game.c`, and only inside `menu_items` and `menu_handle`'s
-   `INPUT_CONFIRM` case:
-   ```c
-   static const char *const menu_items[] = {
-       "Status",
-       "Commission",
-       "Party",
-       "Close menu"
-   };
-   ```
-   `MENU_ITEM_COUNT` recomputes itself from `sizeof`, so the cursor bounds
-   and the draw loop both adapt with no other change. Then handle index 2
-   in the confirm case (showing something like "You travel alone. The Guild
-   could not afford otherwise.") and shift the close-menu branch to index 3.
-
-2. ```c
-   int game_validate_modes(void)
-   {
-       int problems = 0;
-
-       for (int i = 0; i < MODE_COUNT; i++) {
-           if (mode_table[i].draw == NULL || mode_table[i].handle == NULL) {
-               fprintf(stderr, "mode %d has a missing handler\n", i);
-               problems++;
-           }
-       }
-
-       return problems == 0;
-   }
-   ```
-   Better because it fails *immediately and loudly at startup*, every run,
-   rather than crashing later only if a player happens to reach that mode.
-   A missing battle-mode handler discovered on launch is a two-minute fix;
-   the same bug discovered when a player triggers their first encounter is
-   a crash report. This is the same principle as Chapter 11 validating map
-   files and Chapter 13's exercise validating world data: check what the
-   type system can't, as early as possible.
-
-3. Two: add `MODE_GAME_OVER` to the enum (before `MODE_COUNT`) and add its
-   table row. The two new handler functions are entirely new code, not
-   modifications. In Chapter 13's structure you'd instead be adding another
-   `case` block inside the already-nested `switch` in `main`, growing a
-   function that was already too long, in a file that also owns the game
-   loop — and every future mode would keep growing that same function. The
-   difference isn't lines of code; it's whether the cost of adding a mode
-   stays constant or keeps rising.
-
-4. ```c
-   typedef void (*EnterFn)(Game *game);
-
-   typedef struct {
-       const char *name;
-       EnterFn  on_enter;    /* may be NULL if nothing to do */
-       DrawFn   draw;
-       HandleFn handle;
-   } ModeHandler;
-
-   void game_set_mode(Game *game, GameMode mode)
-   {
-       game->mode = mode;
-       if (mode_table[mode].on_enter != NULL) {
-           mode_table[mode].on_enter(game);
-       }
-   }
-   ```
-   Every `game->mode = X` becomes `game_set_mode(game, X)`, and
-   `menu_on_enter` resets `menu_index = 0`. Two things worth noting: the
-   `NULL` check makes `on_enter` genuinely optional (deliberate `NULL`
-   entries are fine when you check for them — the danger is only the
-   *accidental* ones from exercise 2), and adding `on_exit` is the same
-   pattern, called before the mode changes rather than after.
+1. Practice solutions under `solutions/`.
+2. Loop `0 .. MODE_COUNT-1`; stderr on NULL; return false → main exits.
+3. Enum entry + one table row + two functions — not a hunt through nested
+   switches. Party item: usually only `game.c` menu arrays/switch.
+4. `ModeHandler` gains `on_enter`/`on_exit`; `game_set_mode` calls exit on
+   old, assign, enter on new (NULL-safe).
 
 </details>
 

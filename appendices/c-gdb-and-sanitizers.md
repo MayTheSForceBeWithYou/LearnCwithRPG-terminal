@@ -8,6 +8,13 @@ UBSan). This is the version you keep open while debugging.
 
 ---
 
+
+## Related practice
+
+- Heap leaks / ownership drills: `code/ch10/practice/`
+- Tool coverage (why tests miss paths): `code/ch22/practice/01-tool-coverage/`
+- Assertions vs tests: `code/ch22/practice/02-assertions-vs-tests/`
+
 ## Which tool for which problem
 
 None of these overlaps completely with the others. That is the single most

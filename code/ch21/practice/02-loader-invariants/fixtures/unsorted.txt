@@ -1,0 +1,4 @@
+# level 18 first
+18 damage Sunder
+1 heal Mend
+2 damage Ember

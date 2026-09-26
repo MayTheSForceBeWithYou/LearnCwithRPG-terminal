@@ -232,6 +232,16 @@ The `hp` clamp is the same instinct: `hp` genuinely must be stored (you
 can be hurt at any level), but it's clamped against the derived maximum
 rather than trusted, so a save claiming 9999 HP at level 4 gets 39.
 
+
+### Write and read change together; replace atomically
+
+Every new field must land in **both** `save_write` and `save_read`, or the
+strict unknown-key policy rejects your own saves. Prove it with a
+round-trip test (practice `02`). On disk, write `save.tmp` then `rename`
+over the real path so a crash mid-write cannot leave a half file as the
+only save (practice `04`).
+
+
 ## Apply it
 
 ### `save.h`
@@ -518,73 +528,25 @@ borrowed for formatting until something else supplied the name.
 
 ## Exercises
 
-1. Add `steps_since_encounter` to the save. What range should it be
-   validated against, and what happens if you add the field to
-   `save_write` but forget `save_read`?
-2. Bump `SAVE_VERSION` to `2` without changing anything else, rebuild, and
-   try to load an existing save. Is the message clear enough to act on?
-   Now write the code that would *migrate* a version 1 save instead of
-   refusing it — where would that live, and how many versions back would
-   you be willing to support?
-3. The save is written directly over the old one. If the program is killed
-   mid-write, both are gone. Implement the standard fix: write to
-   `save.tmp`, then rename it over `save.txt` only once the write fully
-   succeeded. (`rename` is in `<stdio.h>`.) Why is rename the right
-   primitive here?
-4. *Open-ended:* Saving only at inns means a player who dies in a dungeon
-   loses everything since the last bed. Checkpoint E chose that
-   deliberately. Sketch what a "suspend" save would need — written
-   anywhere, deleted on load — and say which parts of `save.c` would be
-   reused unchanged.
+> **Practice drills:** `code/ch20/practice/` before exercise 2.
+
+1. *Practice.* Version header, round-trip blob, unknown-key refuse, atomic
+   replace.
+2. *Durable — new field.* Add `steps_since_encounter` to **both** write and
+   read; validate a sane range; extend the round-trip test.
+3. *Durable — atomic save.* Write `save.tmp`, then `rename` onto the real
+   save path after a successful close.
+4. *Open-ended:* Suspend save (anywhere, delete on load) vs inn-only —
+   what in `save.c` is reused unchanged? (Version bump/migration sketch
+   optional.)
 
 <details>
 <summary>Solutions</summary>
 
-1. It's a step counter, so `0` to something like `1000` is ample — the
-   encounter check only compares it against `ENCOUNTER_MIN_STEPS` (12), so
-   anything larger is equivalent. Writing without reading is the more
-   interesting half: the loader would hit `steps_since_encounter = 7` and
-   report `unknown key 'steps_since_encounter'`, refusing the save
-   entirely. That's the strictness working as designed — but it means
-   **`save_write` and `save_read` must always be changed together**, and
-   forgetting makes every save written by the new build unreadable by it.
-   A test that writes and immediately reads back (as
-   `test_save_round_trip` does) catches this instantly.
-
-2. The message is `Save is version 1, this game reads 2.` — clear about
-   what happened, though it doesn't tell the player what to do about it.
-   Migration would live in `save_read`, after parsing and before
-   committing: keep accepting the old version number, fill any new fields
-   with defaults, and mark the data as upgraded. The practical question is
-   how many versions back to support, and the honest answer for a personal
-   project is *one*, or *none* — every supported version is a code path
-   you must keep testing forever. Refusing cleanly is a legitimate choice
-   as long as it's explicit.
-
-3. ```c
-   if (!save_write(SAVE_PATH ".tmp", &data, inv, reason, reason_size)) {
-       return 0;
-   }
-   if (rename(SAVE_PATH ".tmp", SAVE_PATH) != 0) {
-       snprintf(reason, reason_size, "Could not replace the save file.");
-       return 0;
-   }
-   ```
-   `rename` is the right primitive because on the same filesystem it is
-   **atomic**: at every instant, `save.txt` is either entirely the old
-   file or entirely the new one, never a half-written mixture. A crash
-   during the `.tmp` write costs you nothing, because the real save was
-   never touched. This pattern — write elsewhere, rename into place — is
-   how essentially all careful software updates a file.
-
-4. `save_write` and `save_read` are reused **completely unchanged** —
-   they already take a path, so a suspend save is just a different one
-   (`assets/suspend.txt`). What's new is policy, not mechanism: the game
-   must prefer the suspend file when it exists, delete it immediately
-   after loading (`remove` from `<stdio.h>`), and refuse to write one
-   during a battle. That the file-handling code needs no changes at all is
-   a sign the path parameter was the right design, rather than hardcoding
-   `SAVE_PATH` inside the functions.
+1. Practice solutions.
+2. Forget read → unknown key on load. Round-trip test catches it.
+3. `fopen` tmp → write → `fclose` → `rename(tmp, final)`.
+4. Serialize/parse helpers reused; path and delete-on-load policy differ.
 
 </details>
 

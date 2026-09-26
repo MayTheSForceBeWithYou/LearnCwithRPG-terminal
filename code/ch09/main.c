@@ -23,9 +23,11 @@ static void draw_world(const Player *player, const Camera *cam)
         }
     }
 
-    render_draw_tile(camera_world_to_screen_x(cam, player->x),
-                     camera_world_to_screen_y(cam, player->y),
-                     TILE_PLAYER);
+    if (camera_is_on_screen(cam, player->x, player->y)) {
+        render_draw_tile(camera_world_to_screen_x(cam, player->x),
+                         camera_world_to_screen_y(cam, player->y),
+                         TILE_PLAYER);
+    }
 
     render_draw_text(0, VIEW_HEIGHT + 1,
                      "w/a/s/d to move, q to quit wandering");
@@ -37,7 +39,7 @@ int main(void)
 {
     printf("****************************************\n");
     printf("*                                      *\n");
-    printf("*          UNTITLED JRPG               *\n");
+    printf("*           UNTITLED RPG               *\n");
     printf("*                                      *\n");
     printf("****************************************\n");
 

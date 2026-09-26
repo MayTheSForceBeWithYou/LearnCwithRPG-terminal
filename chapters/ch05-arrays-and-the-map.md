@@ -153,6 +153,55 @@ bounds is undefined behaviour, full stop, and the only fix is to never let
 it happen — by construction, with `for` loops whose bounds you've checked,
 not by hoping a safety net catches your mistake.
 
+
+### Flat layout and the offset formula
+
+`world[row][col]` looks like two lookups. Internally it is one:
+
+```
+offset = row * MAP_WIDTH + col
+```
+
+A 5×10 map is fifty contiguous `char`s. Row 2, column 3 is byte
+`2 * 10 + 3 = 23` from the start — nowhere is there a separate "row object"
+with its own bounds check. That is why an off-by-one on the *row* loop is
+the same family of bug as `scores[5]`: the arithmetic happily walks past
+the block.
+
+**Loop shape that matches the layout:** outer loop on `row` (or `y`),
+inner on `col` (or `x`). Printing left-to-right, top-to-bottom matches
+how humans read a map *and* how the bytes are packed. Swapping the loops
+still "works" for a square, but the mental model and any later
+`offset = y * width + x` helpers will fight you.
+
+**Defensive indexing.** When a coordinate comes from outside the module
+(player input, a camera, a file), clamp or reject *before* subscripting:
+
+```c
+if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) {
+    return '#';   /* or 0 / error — pick a policy and document it */
+}
+return world[y][x];
+```
+
+Chapter 9's camera clamp and Chapter 7's `map_is_walkable` both rest on
+this habit. The drills in `code/ch05/practice/` force the offset math and
+a tiny `clamp_index` until they are automatic — do those before you treat
+map edits as the only practice.
+
+### Naming rows and columns
+
+This course uses `row`/`col` in early map code and `x`/`y` once entities
+move. Both are fine; mixing them in one function is not. Prefer:
+
+- `y` increases **downward** on screen (row 0 is the top), matching how
+  terminals paint lines;
+- `world[y][x]` with **y first** — that matches the declaration
+  `char world[MAP_HEIGHT][MAP_WIDTH]` (rows outer, columns inner).
+
+If you ever write `world[x][y]` "because x comes first in speech," you will
+transpose the map and spend an hour staring at a sideways village.
+
 ## Apply it
 
 Create a new module, `map.h` / `map.c`, following the same header/source
@@ -243,7 +292,7 @@ Expected output (name `Elowen`, calling `h`):
 ```
 ****************************************
 *                                      *
-*          UNTITLED JRPG               *
+*           UNTITLED RPG               *
 *                                      *
 ****************************************
 
@@ -336,64 +385,40 @@ course: something is wrong, even though the compiler let it through.
 
 ## Exercises
 
+> **Practice drills:** complete `code/ch05/practice/` (`01_row_major` through
+> `04_find_tile`) before exercise 3. Standalone programs — engrain indexing
+> before you keep editing the game map by hand.
+
 1. Change the deliberate off-by-one in "Common errors" above (`<=` instead
    of `<` on the outer loop) and actually run it. What extra line of
-   "map" appears at the bottom? Can you explain, using the flat-memory
-   diagram above, roughly what that row of output actually is?
-2. Add a sixth row to `world` (remember to update `MAP_HEIGHT` to `6` and
-   give the new row exactly `MAP_WIDTH` characters) representing a
-   grassy field using `,` for grass. Rebuild and confirm it prints
-   correctly.
-3. Write a tiny standalone program (not part of the game) with a 5-element
-   `int` array, initialized to `{1,2,3,4,5}`, and deliberately print
-   `array[-1]` — a *negative* index. Does it compile? Does it crash,
-   print `1` (the first real element), or something else entirely? What
-   does this tell you about whether C checks bounds only "from above," or
-   not at all?
-4. *Open-ended:* This map is 10×5 characters — smaller than most terminal
-   windows. Sketch (no code needed) what would need to change for a map
-   *larger* than the screen, where the player can only see part of it at
-   once. You don't need to solve this — Chapter 9 (The Camera) does — but
-   naming the problem yourself first will make that chapter click faster.
+   "map" appears at the bottom? Explain with the flat-memory diagram and
+   the `row * MAP_WIDTH + col` formula from the spotlight.
+2. *Practice (required) + small durable edit.* Finish all four drills in
+   `code/ch05/practice/`. Then add a sixth row to `world` (update
+   `MAP_HEIGHT` to `6`, exactly `MAP_WIDTH` characters) using `,` for
+   grass — lasting content, not a throwaway experiment.
+3. *Negative indices.* Drill-style: in a **standalone** program (or extend
+   practice), print `array[-1]` on a 5-element `int` array. Does it
+   compile? Crash? Print `array[0]`? What does that say about bounds
+   checks in either direction? (Do not leave this in the game binary.)
+4. *Open-ended:* This map is 10×5 — smaller than most terminals. Sketch
+   what must change for a map *larger* than the screen (world vs visible
+   window). Chapter 9 solves it; naming it now makes that chapter click.
 
 <details>
 <summary>Solutions</summary>
 
-1. An extra line prints, made of whatever 10 bytes of memory happen to sit
-   immediately after `world` in memory. On this toolchain it was 10 NUL
-   bytes — invisible on screen, but visible if you pipe the output through
-   something like `cat -A`, which shows each one as `^@`. Your result may
-   differ; that's the nature of undefined behaviour. Referring to the
-   flat-memory diagram: row `MAP_HEIGHT` (index 5, one past the last real
-   row at index 4) doesn't exist in `world` at all — the computed offset
-   lands past the end of the reserved 50 bytes, into memory `world`
-   was never granted any claim to.
-
-2. No fixed answer beyond "does it compile and print correctly" — the
-   mechanical part is making sure `MAP_HEIGHT` and the actual number of
-   `{ ... }` row-initializers stay in sync, and that the new row has
-   exactly 10 characters (matching `MAP_WIDTH`) same as every other row.
-
-3. It compiles with no warning at the same `-Wall -Wextra -Wpedantic`
-   level used throughout this course. It also doesn't print `1` — on this
-   toolchain it printed `0`, not any of the five real values in the array,
-   because `array[-1]` computes an address *before* where `array` starts,
-   landing on whatever unrelated memory happens to sit there (in this
-   case, probably a few bytes of stack bookkeeping that happened to be
-   zero). Exactly like `scores[5]`, the specific value is not something to
-   memorize or rely on — what matters is that it compiled clean and ran
-   without complaint while reading memory that was never part of the
-   array. This confirms bounds checking isn't asymmetric — C doesn't check
-   "only above the top" while protecting the bottom. There is no bounds
-   checking on raw arrays at all, in either direction, ever, at any time,
-   full stop.
-
-4. No fixed answer — but the core problem worth naming is: the *world* can
-   be bigger than what fits on screen, so you need to track both "where is
-   everything in the world" (the full grid, same as now) and "which
-   *portion* of that grid is currently visible" (a smaller window that
-   moves as the player moves). That second piece — the moving window — is
-   exactly what a camera is.
+1. An extra line prints — whatever 10 bytes sit after `world`. On this
+   toolchain often NULs (`cat -A` shows `^@`). Row index `MAP_HEIGHT` is
+   one past the last valid row; offset `5 * 10 + col` lands outside the
+   50-byte block. Undefined behaviour; your bytes may differ.
+2. Drills must print `all checks passed`. For the row: keep `MAP_HEIGHT`
+   in sync with initializer count; each row exactly `MAP_WIDTH` chars.
+3. Compiles clean at course flags. Does not reliably print `array[0]` —
+   negative indices address *before* the array. No bounds checking either
+   direction. See also practice `02_clamp_index` for the defensive habit.
+4. You need world coordinates for the full grid *and* a moving visible
+   window (camera). Chapter 9.
 
 </details>
 

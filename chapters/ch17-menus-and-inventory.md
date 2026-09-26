@@ -151,6 +151,15 @@ gives memory back until `inventory_free`. That's a deliberate, common
 choice: a hero who once held ten item types will likely do so again, and
 shrinking would just mean re-growing later.
 
+
+### Order-preserving remove vs swap-with-last
+
+Swap-with-last is O(1) and fine for bag sims you never stare at. In a
+visible menu, using the selected potion can yank an unrelated stack into
+the cursor slot — players notice. Practice both (`02_remove_shift`,
+`03_remove_swap`), then pick the lasting policy on purpose.
+
+
 ## Apply it
 
 ### The inventory
@@ -549,76 +558,25 @@ error message instead.
 
 ## Exercises
 
-1. Add the Herb Poultice (60 HP) to the hero's starting inventory and
-   confirm the array grows correctly. Then add all six item types and
-   check `capacity` reaches 8 — print it temporarily, or add a test.
-2. `inventory_remove_one` uses swap-with-last, so using an item can
-   reorder the list under the player's cursor. Change it to preserve
-   order by shifting later elements down instead, and decide which
-   behaviour you prefer. Which is more code, and does the player notice?
-3. Add a `Bell of Mild Alarm` handler: `ITEM_EFFECT_FLEE` should end the
-   current battle immediately when used from battle mode, and say "there
-   is nothing to flee from" outside it. Where does the check for "am I in
-   a battle" belong — in `items_use_selected`, or in the item table?
-4. *Open-ended:* The config file is read once at startup. Sketch what it
-   would take to reload it while the game is running (a "reload settings"
-   menu item). What could go wrong if a setting changed mid-battle, and
-   which settings would you refuse to apply until the battle ended?
+> **Practice drills:** `code/ch17/practice/` before exercise 2.
+
+1. *Practice.* Finish add/stack, shift-remove, swap-remove, and grow.
+2. *Durable policy.* Choose shift or swap for live `inventory_remove_one`
+   and implement it — document the choice in a one-line comment.
+3. *Durable — flee item.* `ITEM_EFFECT_FLEE` ends an active battle; outside
+   battle, refuse with a clear message. Mode check at the **use site**, not
+   in the item table row (table stays data).
+4. *Open-ended:* Hot-reload config mid-run — what must wait until battle
+   ends?
 
 <details>
 <summary>Solutions</summary>
 
-1. In `game_create`, add `inventory_add(&game->inventory,
-   ITEM_HERB_POULTICE, 1);`. With all six types added, `count` reaches 6,
-   which exceeds the initial capacity of 4, so one growth to 8 occurs —
-   `capacity` is 8 and stays there. The test in `test_inventory_growth`
-   already asserts `inv.capacity >= inv.count` after six distinct adds;
-   asserting the exact value of 8 would also pass, but couples the test to
-   the growth factor, which is a judgement call about whether doubling is
-   part of the contract or an implementation detail.
-
-2. ```c
-   for (int i = index; i < inv->count - 1; i++) {
-       inv->stacks[i] = inv->stacks[i + 1];
-   }
-   inv->count--;
-   ```
-   Three lines instead of two, and O(n) per removal instead of O(1) —
-   irrelevant at inventory sizes. The player *does* notice: with
-   swap-with-last, using up a potion makes an unrelated item jump to a
-   new position, which feels glitchy in a menu you're looking at. For a
-   visible, ordered list, order-preserving is worth the extra copying.
-   This is a case where the "efficient" answer is the wrong one.
-
-3. The check belongs in `items_use_selected`, not the table. The item
-   table describes *what an item is* — data that's true regardless of
-   context. Whether fleeing is possible right now is *game state*, and
-   the table has no access to it and shouldn't. Concretely:
-   ```c
-   case ITEM_EFFECT_FLEE:
-       if (game->mode != MODE_BATTLE) {
-           snprintf(line, sizeof line, "There is nothing to flee from.");
-           break;
-       }
-       game->battle.outcome = BATTLE_FLED;
-       inventory_remove_one(inv, id);
-       snprintf(line, sizeof line, "The bell rings. You leave.");
-       break;
-   ```
-   (Reaching the items menu from inside a battle is itself a small piece
-   of work — battle mode would need its own route into `MODE_ITEMS` and a
-   way back — which is why this is an exercise rather than shipped code.)
-
-4. Mechanically it's easy: call `config_defaults` then `config_load`
-   again, and copy `config.encounters` into `encounters_enabled`. The
-   risks are all about changing rules mid-decision. `enemy_damage`
-   changing between the hero's action and the enemies' response in the
-   same round makes a round internally inconsistent. `gold_loss_on_death`
-   changing after you've been defeated but before the penalty applies is
-   worse. The safe design is to load into a *pending* config and copy it
-   into the live one only at a quiet moment — on returning to explore
-   mode, say — which is the same reasoning behind not editing a
-   collection while iterating over it.
+1. Practice solutions under `solutions/`.
+2. Shift is usually better UX at inventory sizes; swap is shorter.
+3. In `items_use_selected` (or battle use path): if not in battle, message;
+   else set flee/outcome. Table only names the effect enum.
+4. Refuse combat-affecting knobs until `MODE_WALK` / out of battle.
 
 </details>
 

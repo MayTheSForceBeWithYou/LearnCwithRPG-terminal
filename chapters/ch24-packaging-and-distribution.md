@@ -162,6 +162,13 @@ compiled by hand still builds:
 #endif
 ```
 
+
+### `DESTDIR` stages; `PREFIX` ships
+
+Staging under `/tmp/stage` must not be compiled into the binary. Practice
+`03_destdir_story` makes the string story obvious before `make install`.
+
+
 ## Apply it: finding the data
 
 Create `paths.h`. The comment matters more than the declarations:
@@ -571,60 +578,21 @@ random directory or fails on a read-only one. Ask `paths_save`.
 
 ## Exercises
 
-1. Run `ldd` on `./game`, then on `/bin/ls`. Which libraries do they share,
-   and why does `ls` need fewer? Now run `ldd` on `run_tests` — why does it
-   not need ncurses?
-2. Install with `make install DESTDIR=/tmp/stage PREFIX=/usr/local`, then
-   run `find /tmp/stage`. Explain to yourself why the binary contains
-   `/usr/local/share/...` and not `/tmp/stage/usr/local/share/...` — and
-   why that is the correct behaviour rather than a bug.
-3. Add a `--where` command-line flag that prints `paths_data_dir()` and the
-   save path, then exits. (`main` currently takes `void`; you will need
-   `int argc, char **argv`.) Why is this the single most useful flag a
-   packaged program can have?
-4. *Open-ended:* This game needs ncurses at run time, and says so nowhere.
-   Write the installation section of a README for somebody who has never
-   heard of it: what they need, how to get it on two different
-   distributions, and what error they will see if they skip it. Then decide
-   whether a static build would be a better answer for your audience, and
-   say why.
+> **Practice drills:** `code/ch24/practice/` before exercise 2.
+
+1. *Practice.* Path join, `--where` argv, DESTDIR vs PREFIX story.
+2. *Durable — `--where`.* Print data dir + save path, then exit — keep the
+   flag.
+3. *Reading.* `ldd` on `./game` vs `run_tests`; `DESTDIR` install layout.
+4. *Open-ended:* README install blurb for ncurses — static vs dynamic.
 
 <details>
 <summary>Solutions</summary>
 
-1. Both need `libc.so.6` and the loader — practically everything does.
-   `ls` does not draw a full-screen interface, so it has no reason to link
-   ncurses. `run_tests` links only the pure modules (`combat_math`,
-   `party`, `battle`, and friends) and never calls `initscr`, which is why
-   the `Makefile` has had a separate `TEST_SOURCES` list since Chapter 15.
-   That separation is what makes the test binary fast, portable, and
-   runnable in CI without a terminal.
-
-2. `DESTDIR` is a staging prefix applied to *write* operations only; it is
-   deliberately not compiled in. The binary is being built for a system
-   where it will live at `/usr/local`, and it is merely being *assembled*
-   under `/tmp/stage` so it can be packaged. If `DESTDIR` were compiled
-   in, every package built this way would look for its data in the build
-   machine's temporary directory — which is precisely the bug the
-   convention exists to prevent.
-
-3. Parse `argv[1]` before `game_create`, print both paths, `return 0`.
-   It is the most useful flag because every packaging problem reduces to
-   "the program is not looking where I put the files", and this answers
-   that in one command instead of a `strace`. Real programs do this:
-   `git --exec-path`, `python -m site`, `pkg-config --variable`.
-
-4. The essentials: they need the ncurses runtime — `ncurses` on Arch,
-   `libncursesw6` on Debian and Ubuntu — and they will see
-   `error while loading shared libraries: libncursesw.so.6` if it is
-   missing, before the game prints anything. A static build removes that
-   requirement entirely at the cost of size and of never receiving a
-   security fix without a rebuild from you. For a small game shared with
-   a handful of people on one distribution, dynamic plus one line of
-   documentation is the right trade; for a binary posted publicly for
-   strangers on unknown systems, static starts to look reasonable. The
-   general rule: link dynamically against things the target system
-   certainly has, and statically against things it might not.
+1. Practice solutions.
+2. Parse `argv` before `game_create`.
+3. Tests omit ncurses; DESTDIR is write staging only.
+4. Audience-dependent; document runtime deps either way.
 
 </details>
 

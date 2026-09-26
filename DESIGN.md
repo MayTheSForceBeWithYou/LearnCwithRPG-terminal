@@ -1,4 +1,4 @@
-# Design Document: "Learn C by Building a JRPG"
+# Design Document: "Learn C by Building a RPG"
 
 **A specification for an interactive, incremental tutorial series.**
 
@@ -29,7 +29,7 @@ then explain it," stop. That inverts the entire purpose.
 | # | Goal |
 |---|---|
 | G1 | Teach C — the real language, including the parts that hurt — to someone who wants to learn by building something they care about. |
-| G2 | Produce a genuinely playable JRPG in the spirit of *Final Fantasy I* / *Dragon Warrior*: overworld, towns, dungeons, NPCs, turn-based combat, inventory, magic, shops, save/load, a final boss. |
+| G2 | Produce a genuinely playable RPG in the spirit of *Final Fantasy I* / *Dragon Warrior*: overworld, towns, dungeons, NPCs, turn-based combat, inventory, magic, shops, save/load, a final boss. |
 | G3 | Keep the game runnable at the end of **every single chapter**. Never a broken intermediate state. |
 | G4 | Develop and play entirely inside WSL2 running Arch Linux. |
 | G5 | Let the learner make the creative and technical decisions that shape *their* game, at structured checkpoints. |
@@ -112,7 +112,7 @@ breaking TLS during `pacman -Sy`.
 Produce this tree:
 
 ```
-jrpg-tutorial/
+rpg-tutorial/
 ├── README.md                  # Course overview, how to use, chapter index
 ├── PROJECT_CHOICES.md         # The Choices Ledger — see §6
 ├── chapters/

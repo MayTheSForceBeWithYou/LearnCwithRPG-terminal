@@ -9,6 +9,14 @@ The chapter reference is where the course covers it properly.
 
 ---
 
+
+## Related practice
+
+- Out-of-bounds / indexing: `code/ch05/practice/`
+- Pointer footguns: `code/ch07/practice/`
+- Heap ownership: `code/ch10/practice/`
+- Assert vs tests / coverage: `code/ch22/practice/`
+
 ## How to use this appendix
 
 Start from the **symptom**, not the cause — that is the order you meet them
