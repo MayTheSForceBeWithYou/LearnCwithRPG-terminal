@@ -27,3 +27,9 @@ int camera_world_to_screen_y(const Camera *cam, int world_y)
 {
     return world_y - cam->y;
 }
+
+int camera_is_on_screen(const Camera *cam, int world_x, int world_y)
+{
+    return world_x >= cam->x && world_x < cam->x + VIEW_WIDTH
+        && world_y >= cam->y && world_y < cam->y + VIEW_HEIGHT;
+}

@@ -129,8 +129,8 @@ Use whichever you already know. Don't let editor choice become a detour.
 Create a scratch file — not part of the game, just proof everything works:
 
 ```bash
-mkdir -p ~/projects/jrpg-sanity-check
-cd ~/projects/jrpg-sanity-check
+mkdir -p ~/projects/rpg-sanity-check
+cd ~/projects/rpg-sanity-check
 ```
 
 Create `hello.c`:

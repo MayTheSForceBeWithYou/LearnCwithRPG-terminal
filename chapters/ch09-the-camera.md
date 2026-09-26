@@ -65,6 +65,14 @@ cheerfully let you pass a world coordinate where a screen coordinate
 belongs. The discipline has to come from naming (`world_x` vs `screen_x`,
 never bare `x`) and from routing every conversion through one place.
 
+**Two rulers, one desk.** Imagine two rulers taped to the same desk. One
+measures from the map's top-left (world). The other measures from the
+viewport's top-left (screen). Both can mark "12," and both are wrong for
+the other job. The camera is the sticky note that says which world column
+lines up with screen column 0. Mix the rulers and nothing crashes — the
+`@` just quietly sits in the wrong place, which is worse.
+
+
 ### Clamping
 
 If the camera simply centered on the player unconditionally, standing near
@@ -124,8 +132,11 @@ always reconstructs the original number exactly. This pairing is how a
 *page-scrolling* camera works — the original *Legend of Zelda*'s
 screen-at-a-time rooms, rather than the smooth following this chapter
 builds. `world_x / VIEW_WIDTH` says which screenful you're standing in,
-and `world_x % VIEW_WIDTH` says where you are within it. You'll build that
-variant yourself in the exercises.
+and `world_x % VIEW_WIDTH` says where you are within it.
+
+That page-snap formula is **alternate math** worth learning; it is not this
+chapter's shipped camera. The game keeps clamped centering. Explore page-snap
+in the side drills under `code/ch09/practice/01-page-snap/` (see Exercises).
 
 One caution for later, since it bites people: with *negative* numbers, C's
 `%` follows the sign of the left operand, so `-7 % 20` is `-7`, not `13`.
@@ -139,6 +150,61 @@ Verified on this toolchain:
 If you ever apply `%` to coordinates that might go negative, that's a real
 trap — for this chapter, clamping keeps everything non-negative, so it
 stays theoretical.
+
+
+### Visibility (what later chapters will need)
+
+Centering and conversion answer "where is the camera?" and "where does this
+tile draw?" A third question appears the moment anything other than the
+player exists in the world: **is this world position on screen at all?**
+
+```c
+int camera_is_on_screen(const Camera *cam, int world_x, int world_y)
+{
+    return world_x >= cam->x && world_x < cam->x + VIEW_WIDTH
+        && world_y >= cam->y && world_y < cam->y + VIEW_HEIGHT;
+}
+```
+
+The interval is half-open: inclusive on the left, exclusive on the right —
+the same convention as C array indexing and as the draw loop's
+`screen_x < VIEW_WIDTH`. A point on the right edge column
+`cam->x + VIEW_WIDTH - 1` is visible; `cam->x + VIEW_WIDTH` is not.
+
+Why this belongs in the camera module rather than in `draw_world`: every
+future caller that places an NPC, a warp marker, or a projectile will need
+the same test. Putting it behind `camera.h` means Chapter 13 does not
+reinvent the inequality — and means a bug in the inequality is fixed once.
+
+Work this until it is boring: drills `01`–`05` in `code/ch09/practice/`
+exist specifically so the inequalities become muscle memory before you
+wire them into the game.
+
+### Edge cases worth naming out loud
+
+**Odd view sizes.** `VIEW_WIDTH / 2` truncates. With `VIEW_WIDTH == 21`,
+a player at world `x` produces camera `x - 10`, so the player sits one
+cell left of true center. That is not a bug — integer pixels (and
+character cells) cannot split in half — but if you ever see an off-by-one
+"the player isn't centered," check whether the view size is odd before
+rewriting the formula.
+
+**`VIEW` equal to `MAP`.** Upper clamp bound becomes `0`. The camera
+never scrolls. Correct, and a good sanity check that the formula
+degrades cleanly.
+
+**`VIEW` larger than `MAP`.** Upper bound goes negative.
+`clamp(v, 0, -5)` returns `-5` with the three-line clamp above — a
+camera origin outside the map. Do not paper over this inside `clamp`.
+Treat it as a configuration error (see practice drill `03_bounds`). The
+shipped game keeps `VIEW_*` smaller than `MAP_*` on purpose.
+
+**Drawing only the player without a visibility check.** Today the player
+is always on screen *by construction* of `camera_center_on` (clamping
+guarantees the target stays inside the view). The moment a second entity
+exists at an arbitrary world coordinate, that guarantee vanishes — hence
+`camera_is_on_screen` before `render_draw_tile` for anything that is not
+the camera's follow target.
 
 ## Apply it
 
@@ -417,6 +483,14 @@ clamp freezes `camera.x`, so the subtraction starts changing again and the
 plus a clamp that decides when the world scrolls versus when the player
 does.
 
+
+The inequalities in `camera_is_on_screen` are the same half-open range the
+draw loop already uses; once NPCs arrive you will call it before every
+non-player `render_draw_tile`. Page-scrolling and dead-zone cameras are
+real designs — they live in `code/ch09/practice/` as drills so you can
+learn them without demolishing the following camera this codebase keeps
+from here forward.
+
 ## Common errors
 
 **Drawing world coordinates directly to the screen:**
@@ -461,93 +535,82 @@ returns for out-of-bounds coordinates — a solid wall that isn't in your
 map data anywhere. If you ever see a mysterious wall exactly at the map
 boundary, check this bound first.
 
+
+> **Practice drills:** `code/ch09/practice/` — start with `00-fundamentals/`, then Monk's `01-page-snap` / `02-dead-zone` / `03-clamp-and-center`. See that folder's `README.md`.
+
 ## Exercises
 
-1. Change `VIEW_WIDTH` and `VIEW_HEIGHT` to `30` and `15`. Rebuild and
-   walk to a corner. Does the clamping still behave correctly? What
-   happens if you set `VIEW_WIDTH` to `40` (the full map width) — is the
-   clamp's upper bound still meaningful?
-2. Add a second `render_draw_text` call below the controls line that
-   displays the player's current world coordinates, so you can watch them
-   change as you walk. (You'll need `snprintf` to build the string —
-   that's Chapter 12's topic, so peek ahead or just try
-   `char buf[64]; snprintf(buf, sizeof buf, "pos: %d,%d", player->x,
-   player->y);` and take it on faith for now.)
-3. Implement the page-scrolling camera described in the spotlight section:
-   instead of centering on the player, make the camera jump one full
-   screenful at a time, so the view only changes when the player crosses a
-   page boundary. Use `/` to compute the page. (Hint: `cam->x = (target_x
-   / VIEW_WIDTH) * VIEW_WIDTH;` — and think about whether this version
-   even needs clamping.)
-4. *Open-ended:* This camera always centers on the player. Many JRPGs
-   instead keep the player centered only until they approach a map edge,
-   or use a "dead zone" — a box in the middle of the screen the player can
-   move around freely inside before the camera starts following at all.
-   Sketch how `camera_center_on` would need to change to support a dead
-   zone. (What extra state would the camera need to remember between
-   frames?)
+Complete the practice work **before** exercise 3. Drills live under
+`code/ch09/practice/` — standalone programs, no ncurses, no link against
+the game. Clamping and coordinate conversion need reps, not a single paste
+into `camera.c`.
+
+1. *Reading check.* With `MAP_WIDTH = 40`, `VIEW_WIDTH = 20`, and the
+   player at world `(1, 1)`, what is `cam->x` after `camera_center_on`?
+   What is the player's *screen* x? Now put the player at `(38, 1)` and
+   answer the same two questions. Paper first; confirm with
+   `00-fundamentals/02_center` or by printing in a throwaway build.
+
+2. *Practice folder (required).* Work through, in order:
+   - `code/ch09/practice/00-fundamentals/` (drills `01_clamp`–
+     `05_visibility` — each must print `all checks passed`)
+   - `01-page-snap/` (`make && make check`) — page math; **do not** paste
+     into the game camera
+   - `02-dead-zone/` — stateful update
+   - `03-clamp-and-center/` — why production keeps center+clamp
+   Do not open `solutions/` / `SOLUTION.md` until you have a failing check
+   you cannot explain.
+
+3. *Durable integration — visibility on the real path.* Add
+   `camera_is_on_screen(const Camera *cam, int world_x, int world_y)` to
+   `camera.h` / `camera.c` (half-open bounds; see the Visibility spotlight
+   and `00-fundamentals/05_visibility`). Guard the player draw in
+   `draw_world` with it. Leave the API in place for Chapter 13's NPCs.
+   Do **not** replace `camera_center_on` with a page-scroller — that is
+   `01-page-snap`, not the shipped game. (Monk and this chapter agree:
+   side-folder variants; lasting path stays clamped follow.)
+
+4. *Open-ended design.* After `02-dead-zone`, sketch how you would expose
+   both follow and dead-zone modes later without `#ifdef` soup. A mode
+   enum defaulting to follow is fine as a *future* product idea — it is
+   not required for this chapter (see `docs/pedagogy/NOTES_FOR_BRUCE.md`).
 
 <details>
 <summary>Solutions</summary>
 
-1. Clamping still works correctly at `30`×`15` — the bounds
-   `MAP_WIDTH - VIEW_WIDTH` (10) and `MAP_HEIGHT - VIEW_HEIGHT` (5) just
-   get smaller, so the camera has less room to scroll before pinning. At
-   `VIEW_WIDTH = 40`, the upper bound becomes `40 - 40 = 0`, so
-   `clamp(anything, 0, 0)` is always `0` — the camera can never scroll
-   horizontally at all, which is exactly right, since the whole map width
-   is already visible. The formula degrades gracefully rather than
-   breaking, which is a good sign it's the right formula. (Setting
-   `VIEW_WIDTH` *larger* than `MAP_WIDTH` would make the upper bound
-   negative and `clamp(v, 0, -something)` would return the negative high
-   value — a real bug, but one that only arises from a nonsensical
-   configuration.)
+1. At world `(1, 1)`: raw center x is `1 - 10 = -9` → clamp → `cam->x = 0`.
+   Player screen x is `1 - 0 = 1`. At world `(38, 1)`: raw center
+   `38 - 10 = 28` → clamp to `MAP_WIDTH - VIEW_WIDTH = 20` → `cam->x = 20`.
+   Player screen x is `38 - 20 = 18`. Near the right edge the `@` sits close
+   to the right of the viewport instead of the center — that is the clamp
+   doing its job, not a centering bug.
 
-2. ```c
-   char buf[64];
-   snprintf(buf, sizeof buf, "pos: %d,%d", player->x, player->y);
-   render_draw_text(0, VIEW_HEIGHT + 2, buf);
-   ```
-   Note this goes on line `VIEW_HEIGHT + 2`, below the existing controls
-   text at `VIEW_HEIGHT + 1`, so they don't overwrite each other.
+2. Each drill's harness is the specification. Fundamentals solutions:
+   `00-fundamentals/solutions/`. Scenario solutions: each folder's
+   `SOLUTION.md`. Honest attempt first.
 
 3. ```c
-   void camera_center_on(Camera *cam, int target_x, int target_y)
+   int camera_is_on_screen(const Camera *cam, int world_x, int world_y)
    {
-       cam->x = (target_x / VIEW_WIDTH) * VIEW_WIDTH;
-       cam->y = (target_y / VIEW_HEIGHT) * VIEW_HEIGHT;
+       return world_x >= cam->x && world_x < cam->x + VIEW_WIDTH
+           && world_y >= cam->y && world_y < cam->y + VIEW_HEIGHT;
    }
    ```
-   The `/ VIEW_WIDTH` then `* VIEW_WIDTH` round-trip looks like it should
-   cancel out, but integer division truncates — so it snaps `target_x`
-   down to the nearest multiple of `VIEW_WIDTH`. This version needs no
-   clamping at all: the largest page start is always within the map by
-   construction, provided `MAP_WIDTH` is a multiple of `VIEW_WIDTH` (40
-   and 20 — it is). If it weren't, the last page would run off the edge,
-   and you'd want the clamp back. Notice how different this feels to play:
-   the world only moves when you cross a boundary, which reads as more
-   deliberate and less fluid.
-
-   One practical wrinkle: dropping the clamp leaves `clamp` itself
-   unused, and this course's flags treat that as worth mentioning —
+   In `draw_world`:
+   ```c
+   if (camera_is_on_screen(cam, player->x, player->y)) {
+       render_draw_tile(camera_world_to_screen_x(cam, player->x),
+                        camera_world_to_screen_y(cam, player->y),
+                        TILE_PLAYER);
+   }
    ```
-   camera.c:4:12: warning: ‘clamp’ defined but not used [-Wunused-function]
-   ```
-   Delete the function (you can always retrieve it from `code/ch09/`) or
-   keep the clamped version around under a different name. Leaving a
-   warning in place isn't an option — that's the rule from Chapter 1, and
-   it applies to your own experiments too.
+   With the following camera this `if` is always true for the player; the
+   point is the API shape Chapter 13 reuses. Snapshot: `code/ch09/`.
 
-4. No fixed answer. The key insight: a dead-zone camera can't compute its
-   position from the player's position alone — it needs to remember where
-   it was last frame, then only adjust if the player has moved outside the
-   dead-zone box relative to the *current* camera position. So
-   `camera_center_on` would stop being a pure "given the player, compute
-   the camera" function and become an update-in-place one, reading
-   `cam->x`/`cam->y` as input as well as writing them. The `Camera` struct
-   already holds that state; what changes is that the function now depends
-   on the camera's previous value instead of overwriting it
-   unconditionally.
+4. No fixed answer. Dead-zone needs previous `cam->x`/`cam->y`. Prefer an
+   explicit call site or a small mode enum *later*; keep practice harnesses
+   as the oracle for non-default modes so the game binary is not the only
+   place the math is tested.
 
 </details>
 

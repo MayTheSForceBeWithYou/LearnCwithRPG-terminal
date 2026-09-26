@@ -1,0 +1,2 @@
+1 heal Mend
+2 teleport Blink

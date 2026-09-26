@@ -504,94 +504,37 @@ being systematic about.
 
 ## Exercises
 
-1. Deliberately corrupt `assets/maps/overworld.map` in five different
-   ways — delete the header line, change a `#` to an `X`, delete the last
-   row, make one row 39 characters, and set the header to `40 999`. Run
-   the game after each. Does every case produce a clear message and a
-   clean exit rather than a crash? (This is the real test of the
-   chapter's validation, and it's worth doing all five.)
-2. Add support for a comment line: any line in the map file starting with
-   `;` should be skipped entirely rather than treated as a row. Where in
-   the loop does the check need to go, and why does skipping a line
-   complicate the `for (int y = 0; y < height; y++)` structure?
-3. `map_load` currently prints its errors to `stderr` and returns `NULL`.
-   Change it to also report *which* kind of failure occurred to the
-   caller — for example by returning a `MapLoadResult` enum through a
-   pointer parameter — so a future caller could react differently to
-   "file missing" than to "file malformed". Sketch the signature and
-   explain what you'd gain.
-4. *Open-ended:* The map format has no way to say where the player should
-   start, where the exits are, or what's in a treasure chest. Design (on
-   paper) an extension to the format that supports at least a start
-   position. What would it do to `map_load`'s parsing loop, and how would
-   you keep old map files working?
+> **Practice drills:** work `code/ch11/practice/01-map-fixtures/` (`01_header`,
+> `02_row_width`, `03_skip_comments`) before exercise 2. Do **not** corrupt
+> shipped `assets/maps/` for negative cases — use the fixtures in that folder.
+> Hostile-input checks against the real loader stay valuable: point it at a
+> *copy* of a fixture path if you want, never at production `overworld.map`.
+
+1. *Hostile fixtures (practice).* Complete `01-map-fixtures` (`make && make check`).
+   Open each `fixtures/*.map` and predict the diagnostic before you run. Confirm
+   clear failures on bad header, short row, invalid tile, truncated grid, and
+   absurd height — using **fixtures**, not the shipped overworld.
+2. *Durable format feature.* After the practice folder, add `;` comment-line
+   skipping to real `map_load` (lasting). Do not advance the row counter for
+   comment lines.
+3. Sketch `MapLoadResult` (or an out-param enum) so callers can tell "missing"
+   from "malformed" without scraping stderr. Optional implement.
+4. *Open-ended:* Design a start-position extension that keeps old maps
+   loading. What changes in the parse loop?
 
 <details>
 <summary>Solutions</summary>
 
-1. All five should be caught. The messages, verified against the real
-   loader:
-   ```
-   map_load: 'assets/maps/overworld.map' has no valid 'width height' header
-   map_load: 'assets/maps/overworld.map' row 1 has invalid tile 'X'
-   map_load: 'assets/maps/overworld.map' ended early (row 19 of 20)
-   map_load: 'assets/maps/overworld.map' row 3 is 39 tiles, expected 40
-   map_load: 'assets/maps/overworld.map' ended early (row 20 of 999)
-   ```
-   Every one exits cleanly with status 1 and no crash. Note the last case:
-   `40 999` isn't rejected by the range check (999 is a *plausible*
-   height), so it's caught later by the row loop running out of file —
-   two different checks catching two aspects of the same lie.
-
-2. The check goes immediately after the `fgets`, before the trim and
-   length check:
-   ```c
-   if (line[0] == ';') {
-       y--;            /* this iteration didn't consume a row */
-       continue;
-   }
-   ```
-   The `y--` is the awkward part, and it's a hint that `for (y = 0; y <
-   height; y++)` is now the wrong loop shape — the loop counter no longer
-   advances once per iteration. A cleaner rewrite uses a `while` loop with
-   an explicit `rows_read` counter incremented only when a real row is
-   consumed, which separates "how many lines have I read" from "how many
-   rows have I filled." That distinction is exactly the kind of thing that
-   makes parsers clearer.
-
-3. ```c
-   typedef enum {
-       MAP_LOAD_OK,
-       MAP_LOAD_NO_FILE,
-       MAP_LOAD_BAD_HEADER,
-       MAP_LOAD_BAD_ROW,
-       MAP_LOAD_OUT_OF_MEMORY
-   } MapLoadResult;
-
-   Map *map_load(const char *path, MapLoadResult *out_result);
-   ```
-   What you gain: the caller can *react* rather than just give up. A
-   missing file might be recoverable (fall back to a default map, or
-   create a new one); a malformed file probably isn't. Right now every
-   failure is indistinguishable at the call site, so `main` can only
-   print a generic message and exit. The cost is that every caller now
-   has to handle an extra out-parameter, which is why it isn't worth doing
-   until something actually needs to distinguish the cases — a real
-   engineering tradeoff, not an obvious improvement.
-
-4. No fixed answer. A common approach is a second header line, or
-   key-value lines before the tile rows:
-   ```
-   40 20
-   start 1 1
-   ########################################
-   ```
-   `map_load` would need to read lines until it encounters the first tile
-   row, dispatching on the leading keyword — which is the beginning of a
-   real tokenizer, and exactly where Chapter 21 (Data-Driven Content)
-   picks up. For backward compatibility, make the new lines optional with
-   sensible defaults, so a file with no `start` line still loads and puts
-   the player at some fallback position.
+1. See `code/ch11/practice/01-map-fixtures/SOLUTION.md` and `solutions/`.
+   Fixture matrix: `bad_header`, `short_row`, `invalid_tile`, `truncated`,
+   `absurd_height`, plus `ok` / `comments`.
+2. In `map_load`, after `fgets`, skip lines whose first non-space char is `;`
+   — and do **not** advance the row counter for those lines. Practice
+   `03_skip_comments` is the rehearsal.
+3. `typedef enum { MAP_LOAD_OK, MAP_LOAD_MISSING, MAP_LOAD_BAD_HEADER, ... } MapLoadResult;`
+   with `Map *map_load(const char *path, MapLoadResult *out);`
+4. A second header line, or a `start x y` record after the grid; version
+   or optional lines keep old files working.
 
 </details>
 

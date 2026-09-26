@@ -8,7 +8,7 @@ Persistent instructions for this repository. Read at the start of every session.
 
 **This repository contains a tutorial course, not a game.**
 
-We are writing a course that teaches a human to build a JRPG in C. The learner writes
+We are writing a course that teaches a human to build a RPG in C. The learner writes
 the game. You write the lessons that make that possible.
 
 Yes, you will write code — every chapter has examples, and every chapter ships a

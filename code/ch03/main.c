@@ -79,7 +79,7 @@ int main(void)
 {
     printf("****************************************\n");
     printf("*                                      *\n");
-    printf("*          UNTITLED JRPG               *\n");
+    printf("*           UNTITLED RPG               *\n");
     printf("*                                      *\n");
     printf("****************************************\n");
     printf("\n");

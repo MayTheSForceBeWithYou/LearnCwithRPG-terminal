@@ -222,6 +222,14 @@ pointer would leave every spell naming whatever the last line happened to
 be. Copying costs 24 bytes per spell and removes an entire class of
 dangling-pointer bug.
 
+
+### Validate at the loader boundary
+
+Hot-path helpers like `magic_known_count` can stay simple **if** the loader
+already refused unsorted or unknown-effect rows. Break those invariants in
+`code/ch21/practice/`, not by deleting production checks.
+
+
 ## Apply it
 
 ### `assets/levels.txt`
@@ -453,67 +461,27 @@ place to catch them.
 
 ## Exercises
 
-1. Add a spell to `assets/spells.txt` — a level 4 heal called
-   "Second Wind", say. Confirm it appears in the game with no rebuild.
-   Now add one with the effect name `teleport`. What happens, and is the
-   message enough to fix it?
-2. `magic_known_count` relies on the spell list being sorted, and the
-   loader enforces it. Remove that check, put a level 18 spell first in
-   the file, and describe exactly what the player sees. Why is a loader
-   check better than making `magic_known_count` sort or search?
-3. Move the enemy rosters from `battle.c` to `assets/enemies.txt`. What
-   invariant does that table have that the level table doesn't? (Hint:
-   what does `battle_begin` assume about a roster before picking from it?)
-4. *Open-ended:* The area table in `world.c` holds NPC dialogue, which is
-   the content most likely to need editing. Sketch the file format —
-   remembering that speech contains spaces, apostrophes and possibly
-   newlines — and say which part would be hardest to parse safely.
+> **Practice drills:** `code/ch21/practice/01-spell-line/` then
+> `02-loader-invariants/` (`make && make check`) before exercise 2. Do **not**
+> remove the production sortedness check to "see what happens" — that diagnosis
+> belongs in the unsorted fixture under practice.
+
+1. *Practice.* Parse a spell line (`01-spell-line`); validate sorted levels +
+   known effects on fixtures (`02-loader-invariants`).
+2. *Durable content.* Add a real spell row to `assets/spells.txt` (no
+   rebuild). Try an unknown effect name — is the error enough?
+3. *Reading.* Explain why loader sortedness beats fixing `known_count` to
+   scan — after running the unsorted fixture in practice.
+4. *Open-ended:* Sketch enemies.txt / dialogue file formats.
 
 <details>
 <summary>Solutions</summary>
 
-1. Adding `spell  4   4   45  none  heal  Second Wind` works immediately —
-   run the game and a level 4 hero knows it. Using `teleport` fails the
-   load and reports:
-   ```
-   spells: assets/spells.txt:14: unknown effect 'teleport'
-   ```
-   That names the file, the line, and the offending word, which is enough
-   to fix it — and the game still runs on the built-in list. The message
-   would be better still if it listed the valid effect names; that's a
-   small improvement worth making, since the file's comment block can
-   drift out of sync with `effect_bindings`.
-
-2. With an unsorted file, `magic_known_count(2)` counts every spell whose
-   level is `<= 2` by scanning the whole list — so it would return 1 for a
-   list starting with Sunder followed by Mend, but `magic_spell_at(0)`
-   returns *Sunder*. The player's spell menu shows one entry, and it's the
-   level 18 nuke, castable at level 2 if they have the MP. A loader check
-   is better than sorting because it fixes the problem at the boundary,
-   once, at startup — sorting inside `magic_known_count` would run on every
-   frame the menu is open, and searching would make the function O(n) for
-   no benefit. Validate at the edge; keep the interior simple.
-
-3. Each roster needs `max_group`, and crucially `battle_begin` calls
-   `rng_range(rng, 0, roster->count - 1)` to pick an enemy. **A roster
-   with zero enemies makes that `rng_range(rng, 0, -1)`** — which
-   `rng_range` handles (it returns `low` when `high < low`), but which
-   would then index `roster->types[0]` on an empty array. The level table
-   has no equivalent hazard because it's fixed-size. So the enemy loader
-   must reject a roster that declares itself non-empty but lists nothing,
-   and areas with no roster must be expressible deliberately (as
-   Castle Hollis already is with `NULL`).
-
-4. No fixed answer. The hard part is speech: it contains spaces (so it must
-   be the rest of the line, like spell names), apostrophes (fine in a text
-   file, but a reminder not to invent quoting you don't need), and
-   ideally line breaks for long dialogue — which a line-based format
-   cannot express without either a continuation marker or a
-   multi-line block syntax with a terminator. The safest design is the
-   dullest: one line per speech, and let `dialog_wrap` (Chapter 12) handle
-   presentation, since it already pages arbitrary-length text. Inventing a
-   quoting scheme is where hand-rolled parsers usually acquire their
-   security bugs.
+1. Practice folders under `code/ch21/practice/` (`SOLUTION.md` in each).
+2. Unknown effect should name file/line; game falls back or refuses load.
+3. Validate once at boundary; keep hot path O(prefix). Unsorted fixtures show
+   prefix≠scan — that is why production keeps the check.
+4. Speech needs quoting/escapes; rosters need group-size invariants.
 
 </details>
 

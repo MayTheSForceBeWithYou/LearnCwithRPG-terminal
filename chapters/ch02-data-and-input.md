@@ -153,6 +153,14 @@ newline character from pressing Enter as part of the string. That's why the
 game code below prints `"Welcome, %s"` with no `\n` of its own — the
 newline you typed is already sitting at the end of `name`.
 
+
+### Types do not enforce game rules
+
+`int hp = -5` is a perfectly valid `int`. The type system will not save you.
+Clamping HP to `[0, max_hp]` is **game logic** — practice `04_clamp_hp`
+before you expect battle code to do it later.
+
+
 ## Apply it
 
 Pick up `main.c` where Chapter 1 left it. Replace the last two `printf`
@@ -329,57 +337,22 @@ relevant.
 
 ## Exercises
 
-1. Change `hp` from `20` to `-5` and rerun. What prints? C doesn't stop you
-   from assigning a nonsensical value here — nothing about the *type*
-   `int` says "must be non-negative." Where do you think a real game should
-   guard against this, once it exists?
-2. Add a fifth stat, `int gold`, initialized to some starting amount, and
-   print it in the character sheet. What format specifier does it need?
-3. Change `power_rating`'s calculation to remove the `(float)` cast
-   entirely — just `attack + defense / 2`. Recompile and run. Is the result
-   different from what you expect, and if so, is it the *same kind* of bug
-   as the spotlight section's percentage example, or a different one? (Hint:
-   check operator precedence for `+` and `/`, not just integer division.)
-4. *Open-ended:* Real RPGs often show a title like "Elowen, Level 1
-   Wanderer" instead of a bare name. Using only what this chapter taught
-   (types, `printf`, casting), sketch — in a comment, not necessarily
-   working code — what additional stat or piece of data you'd need to make
-   that possible, and what type it would be.
+> **Practice drills:** `code/ch02/practice/` before exercise 2.
+
+1. *Practice.* Finish format specs, int division, casted average, HP clamp.
+2. *Reading.* Assign `hp = -5` in the chapter program — what prints? Why is
+   that a logic problem, not a type error? (Restore afterward.)
+3. *Precedence.* Remove the `(float)` cast from `power_rating` as
+   `attack + defense / 2`. Is the bug integer division, precedence, or both?
+4. *Open-ended:* Sketch a `level` field type for "Elowen, Level 1 Wanderer."
 
 <details>
 <summary>Solutions</summary>
 
-1. `-5` prints exactly as typed — `printf("%d", hp)` shows `-5`, no error,
-   no warning. `int` is a signed type, so negative values are completely
-   valid *as far as the type system is concerned*. Nothing here stops you
-   from creating a hero with negative HP; that's a **game logic** problem,
-   not a type problem, and belongs wherever HP gets modified — likely
-   clamped to a minimum of 0 in the battle system, many chapters from now.
-   This is a preview of a recurring lesson: C's type system checks much
-   less than you'd expect, and the rest is on you.
-
-2. `int gold = 100;` (or any starting value) and `printf("Gold:   %d\n",
-   gold);` — same pattern as the other `int` stats, `%d`.
-
-3. Different bug, and a sneakier one. `attack + defense / 2` doesn't do
-   what the parentheses in the original implied — C's operator precedence
-   evaluates `/` before `+`, exactly like normal arithmetic (multiplication
-   and division bind tighter than addition and subtraction). So this
-   computes `attack + (defense / 2)`, not `(attack + defense) / 2`. With
-   `attack = 6` and `defense = 4`, that's `6 + 2 = 8`, not `5`. Removing the
-   cast made the integer-division bug from the spotlight *reappear too*
-   (`defense / 2` is `int / int`), but the more dangerous bug here is that
-   the parentheses were doing real work and got silently dropped. Precedence
-   bugs like this are exactly why generous parentheses, even
-   "unnecessary" ones, are cheap insurance in C.
-
-4. No fixed answer — a `level` field would most naturally be an `int`
-   (whole numbers only, matches how levels work in nearly every RPG), and
-   a `class` or `title` field ("Wanderer") would need to be text — which,
-   given what this chapter taught, means another `char` buffer like `name`.
-   Full support for a roster of *different* titles per class is really an
-   arrays-of-strings problem, which you're not equipped for until Chapters
-   5 and 12 land together.
+1. Practice `solutions/`.
+2. Prints `-5`. Guard at modification sites later.
+3. Both: `/` binds tighter than `+`, and int division truncates.
+4. `int level` (or similar).
 
 </details>
 

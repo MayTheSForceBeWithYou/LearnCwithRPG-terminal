@@ -137,6 +137,14 @@ typedef struct {
 mechanism — it's every type you already know, composed into a shape that
 matches what a "player" actually is.
 
+
+### Enums as consecutive integers
+
+Leaving a `case` out of a `switch` on an enum often compiles — with luck
+`-Wswitch` warns. Practice `03_switch_enum` (including `RANK_SS`) before
+you add ranks only in the header.
+
+
 ## Apply it
 
 Retire `character.h`/`character.c` in favor of a new module, `entity.h` /
@@ -453,81 +461,21 @@ it.
 
 ## Exercises
 
-1. Add a `gold` field (`int`) to `Player`, initialize it to some starting
-   amount in `entity_create_player`, and print it in `entity_print_sheet`.
-2. Add a seventh rank, `RANK_SS`, above `RANK_S`. What integer value does
-   it get automatically? Update `rank_to_char` to handle it — what
-   happens if you forget to add a `case` for it and compile anyway? (Try
-   it and read the warning, if any, before assuming.)
-3. Without changing `entity_move` itself, could you make the position
-   update "work" by changing how you *call* it — for example, reassigning
-   `player = ...` using its return value? `entity_move` currently returns
-   `void`. Sketch what its signature and body would need to look like for
-   a return-value-based fix. (You don't need it to compile — Chapter 7
-   covers a cleaner fix. This is about predicting the shape of a solution
-   from what you already know.)
-4. *Open-ended:* Real RPGs usually have more than one party member.
-   Sketch (comments only, no working code required) what an `Npc` or
-   second-party-member struct might share with `Player`, and what would
-   need to differ.
+> **Practice drills:** `code/ch06/practice/` before exercise 2.
+
+1. *Practice.* Struct init, enum values, switch, array-of-struct party toy.
+2. *Durable — gold.* Add `gold` to `Player`, init + print (lasting field).
+3. *Durable — rank.* Add `RANK_SS` and update `rank_to_char`. Note any
+   `-Wswitch` if you "forget" a case once on purpose, then fix.
+4. *Open-ended:* Sketch shared fields for a second party member / `Npc`.
 
 <details>
 <summary>Solutions</summary>
 
-1. ```c
-   /* entity.h, inside Player */
-   int gold;
-   ```
-   ```c
-   /* entity.c, in entity_create_player */
-   p.gold = 50;
-   ```
-   ```c
-   /* entity.c, in entity_print_sheet */
-   printf("Gold:   %d\n", p.gold);
-   ```
-
-2. `RANK_SS` gets `5`, continuing the automatic count from `RANK_S`'s `4`.
-   If you compile `rank_to_char`'s `switch` without adding a matching
-   `case RANK_SS:`, `-Wall` (already part of this course's standard flags)
-   catches it:
-   ```
-   swtest.c: In function ‘rank_to_char’:
-   swtest.c:15:5: warning: enumeration value ‘RANK_SS’ not handled in switch [-Wswitch]
-      15 |     switch (rank) {
-         |     ^~~~~~
-   ```
-   `-Wswitch` specifically watches for a `switch` over an `enum` type that
-   has no `default:` label and doesn't cover every enum value — exactly
-   `rank_to_char`'s shape. It still compiles (this is a warning, not an
-   error) and falls through to the function's final `return '?';`,
-   printing a placeholder rank letter instead of a real one — but you get
-   a compiler warning telling you exactly what to fix, for free, precisely
-   because `rank_to_char` has no `default:` case. Adding one (to handle
-   "shouldn't happen" cases deliberately) would silence this warning
-   entirely, which is a real trade-off worth knowing: a `default:` is
-   sometimes exactly right, and sometimes it's how a genuine gap like this
-   one goes unnoticed.
-
-3. The shape would be: change `entity_move`'s return type from `void` to
-   `Player`, have it modify its local copy `p` same as before, and end
-   with `return p;` — then call it as `player = entity_move(player, 1,
-   0);` in `main`, reassigning `player` to the (moved) returned copy. This
-   actually works, and is a completely legitimate way to solve this
-   particular problem! It's just not the way this course is headed,
-   because it doesn't scale — imagine a function that needs to modify
-   *five* different values at once; returning all five bundled up gets
-   awkward fast, and it's easy to forget to reassign the result at the
-   call site. Chapter 7's fix solves this generally, for any number of
-   values, without needing a return at all.
-
-4. No fixed answer — a strong sketch would keep `name`, `x`, `y`, and the
-   core stats in common (perhaps by literally reusing `Player`'s shape or
-   even the type itself, depending on how identical NPCs and the hero
-   turn out to be), while an NPC likely needs something a `Player`
-   doesn't: dialogue text, or a flag for whether it can be talked to.
-   You're not expected to have settled this — Chapter 13 introduces NPCs
-   for real.
+1. Practice solutions.
+2. Field + create + print sheet.
+3. `RANK_SS` continues the count; missing case may warn under `-Wswitch`.
+4. Shared: name, hp, position; differ: inventory ownership, AI, etc.
 
 </details>
 

@@ -691,9 +691,16 @@ first: `(hp * 3) / max_hp`.
 
 ## Exercises
 
-1. Give `log_linef` a bug on purpose: pass an `int` to a `%s`. Confirm the
-   compiler catches it, then delete the `__attribute__((format(...)))`
-   line and try again. What does the program do at runtime?
+> **Practice drills:** `code/ch23/practice/01-format-contract/` (`make &&
+> make check`, then `make bad`) plus micros `01_format_attr`,
+> `02_phase_index`, `03_sim_potion_gate`. Do **not** delete the
+> `__attribute__((format(...)))` line from production `log_linef` to see
+> what happens — that comparison lives in the drill.
+
+1. *Format contract (practice).* Complete `01-format-contract`. Run `make bad`
+   and read both compiler outputs (with vs without the attribute on an
+   intentional `%s`/int mismatch). What does keeping the attribute buy you
+   before runtime?
 2. Items cannot be used in battle — the battle screen never offered them,
    so unlike magic this is a missing feature rather than a broken promise.
    Wire `MODE_ITEMS` in the same way magic now works, and update the help
@@ -701,49 +708,40 @@ first: `(hp * 3) / max_hp`.
    reintroducing?
 3. Add a fourth phase line to one boss and change `BOSS_PHASE_COUNT` to 4.
    What else has to change, and what happens if you change the constant
-   but not `battle_boss_phase`?
+   but not `battle_boss_phase`? (Rehearse clamp/index ideas in
+   `02_phase_index` if you want.)
 4. *Open-ended:* Vex was rebalanced with a simulation that heals but never
    uses items. Extend it to drink a Herb Poultice when out of MP, and see
    what that does to the win rates. Then decide: should the boss be tuned
    against a player who plays well, or one who plays adequately? Write
    down which you chose and why — it is the single most consequential
-   number in the game, and there is no correct answer.
+   number in the game, and there is no correct answer. (`03_sim_potion_gate`
+   is a tiny rehearsal of the gate.)
 
 <details>
 <summary>Solutions</summary>
 
-1. With the attribute, gcc reports `format '%s' expects argument of type
-   'char *', but argument 3 has type 'int'`. Without it, the call
-   compiles clean and `vsnprintf` treats the integer as an address —
-   typically a segfault, occasionally a screenful of garbage, and on a
-   very unlucky day nothing visible at all. That last case is the reason
-   to keep the attribute: the bug that shows up immediately is the
-   cheapest kind.
-
-2. Add `case INPUT_FLEE`-style handling for a new key, set
-   `game->item_index = 0`, switch to `MODE_ITEMS`, and make the items
-   screen return to `MODE_BATTLE` when a fight is running. The risk is
-   **bug 2**: if using an item can end the battle (it cannot today, but a
-   damaging item would), the item path needs the same `battle_finish`
-   hand-off that `spells_cast_selected` now has. Any new way to end a
-   fight must go through the one exit.
-
+1. See `01-format-contract/SOLUTION.md`. With the attribute, gcc reports
+   `format '%s' expects argument of type 'char *', but argument … has type
+   'int'`. Without it, the call can compile clean and `vsnprintf` treats the
+   integer as an address — typically a segfault, occasionally garbage, and
+   on a very unlucky day nothing visible. Keep the attribute on shipping
+   wrappers.
+2. Add handling for a new key, set `game->item_index = 0`, switch to
+   `MODE_ITEMS`, and make the items screen return to `MODE_BATTLE` when a
+   fight is running. The risk is **bug 2**: any new way to end a fight must
+   go through the one `battle_finish` exit.
 3. `BossType.phase_lines` sizes itself from the constant, so it grows
    automatically — but `battle_boss_phase` still returns only 0, 1 or 2,
-   so the fourth line is never spoken and the array's last slot stays
-   `NULL`. The test in `test_boss_phases` that checks every phase line is
-   non-NULL fails, which is exactly what it is for. The thresholds and
-   the constant have to change together; a constant that only half the
-   code respects is worse than a literal.
-
-4. Adding items typically pushes the level-14 win rate well above 80%,
-   because Herb Poultices are cheap and the hero can carry many. Tuning
-   against a well-played run makes the boss harder for everyone else;
-   tuning against an adequate one makes it trivial for anyone who
+   so the fourth line is never spoken. The test that checks every phase
+   line is non-NULL fails on purpose. Constant and thresholds must change
+   together.
+4. Adding items typically pushes the level-14 win rate well above 80%.
+   Tuning against a well-played run makes the boss harder for everyone
+   else; tuning against an adequate one makes it trivial for anyone who
    prepares. Most games tune for the middle and let difficulty settings
-   cover the ends — which this game already has, in
-   `assets/config.txt`'s `enemy_damage`. That is the honest answer here:
-   pick the middle, and let the player who wants a fight turn it up.
+   cover the ends — which this game already has in `assets/config.txt`'s
+   `enemy_damage`.
 
 </details>
 

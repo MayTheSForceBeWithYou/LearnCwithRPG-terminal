@@ -58,6 +58,16 @@ need), aimed upward instead of inward: hide *which library* does the work,
 so the rest of your program only ever depends on the shape of the
 interface, never the implementation behind it.
 
+
+### Why the present seam stays
+
+`render_present` is a one-line wrapper today. That is not a reason to
+delete it. The call site in `draw_world` says "frame is ready" in *game*
+vocabulary; `refresh()` says "ncurses, flush now." When Chapter 24 (or an
+SDL port) swaps backends, every `refresh()` buried in game code becomes a
+hunt. Practice drill `02-render-boundary` makes the failure mode obvious
+in twenty lines — run that instead of gutting the live binary.
+
 ## Apply it
 
 ### The rendering interface
@@ -474,75 +484,47 @@ force your terminal back to sanity if this happens to you.
 
 ## Exercises
 
-1. Change `render_draw_tile`'s `TILE_WALL` case to draw a different
-   character, like `%`. Rebuild and confirm only the walls change — the
-   floor and player symbols should be untouched. This is the entire point
-   of the opaque interface: changing how something looks is a one-line
-   change in exactly one file.
-2. `input_poll` currently only recognizes lowercase and uppercase
-   `wasdq`. Add support for the arrow keys — ncurses defines `KEY_UP`,
-   `KEY_DOWN`, `KEY_LEFT`, `KEY_RIGHT` as special values `getch()` can
-   return (this requires `keypad(stdscr, TRUE)`, already enabled in
-   `render_init`). Add the appropriate `case` labels.
-3. `render_present` is a one-line wrapper around `refresh()`. Try calling
-   `refresh()` directly from `draw_world` instead, deleting
-   `render_present` and its declaration entirely — does the game still
-   work? What have you lost, architecturally, even though it still runs
-   identically today?
-4. *Open-ended:* Now that movement redraws the whole screen every turn,
-   what's one piece of information from `entity_print_sheet` (HP, MP,
-   gold...) you'd want visible on screen *while wandering*, not just at
-   the start? Sketch where `render_draw_text` would need to be called to
-   show it, without writing the full implementation.
+> **Practice drills:** work `code/ch08/practice/` in order (`01-glyph-table`,
+> `02-render-boundary`, `03-key-dispatch`) before exercise 2. Do **not**
+> delete `render_present` from the game or call `refresh()` from
+> `draw_world` — that experiment belongs only in `02-render-boundary`.
+
+1. *Glyph table (practice).* In `01-glyph-table`, implement `glyph_for`
+   including `TILE_WATER`. Optionally flip wall to `%` in the **drill
+   only**, then restore. Confirm you understand why live
+   `render_draw_tile` centralizes the same decision.
+2. *Durable UX — arrow keys.* Add `KEY_UP` / `KEY_DOWN` / `KEY_LEFT` /
+   `KEY_RIGHT` to real `input_poll` (keypad already enabled). Use
+   `03-key-dispatch` to rehearse the table first if you want.
+3. *Seam check (practice, not a game edit).* Complete `02-render-boundary`
+   so `draw_world` calls `render_present` twice across two frames. In your
+   own words: what is lost if game code calls the backend refresh
+   directly, even when behaviour matches today?
+4. *Open-ended:* Sketch which sheet field (HP, gold, …) should stay on
+   screen while wandering, and where `render_draw_text` would go. Implement
+   later when string formatting is comfortable (Chapter 12); the lasting
+   idea is a HUD call site, not a one-off `printf`.
 
 <details>
 <summary>Solutions</summary>
 
-1. Change `symbol = '#';` to `symbol = '%';` inside the `TILE_WALL` case.
-   Nothing else in the project changes, and nothing else needs to — every
-   caller of `render_draw_tile` just passes a `TileType`, never a raw
-   character, so the actual visual symbol is a decision made in exactly
-   one place.
-
+1. See `01-glyph-table/SOLUTION.md`. Live renderer: one `switch` or table
+   in `render_ncurses.c` — callers pass `TileType` only.
 2. ```c
-   switch (key) {
-       case 'w': case 'W': case KEY_UP:    return INPUT_UP;
-       case 's': case 'S': case KEY_DOWN:  return INPUT_DOWN;
-       case 'a': case 'A': case KEY_LEFT:  return INPUT_LEFT;
-       case 'd': case 'D': case KEY_RIGHT: return INPUT_RIGHT;
-       case 'q': case 'Q': return INPUT_QUIT;
-       default: return INPUT_NONE;
-   }
+   case 'w': case 'W': case KEY_UP:    return INPUT_UP;
+   /* ... same pattern for down/left/right ... */
    ```
-   `KEY_UP` and friends are constants ncurses defines in `<ncurses.h>`,
-   representing multi-byte escape sequences arrow keys actually send —
-   `getch()` (with `keypad` enabled) decodes those sequences for you and
-   returns one of these constants instead of the raw bytes.
-
-3. The game still runs identically — `refresh()` and `render_present()`
-   do exactly the same thing, so there's no *behavioral* difference today.
-   What's lost is the abstraction boundary itself: `draw_world` (which
-   lives in `main.c`, game logic) would now directly call an ncurses
-   function, meaning `main.c` would need `#include <ncurses.h>`. The
-   moment that happens, swapping in `render_sdl.c` later stops being a
-   one-file change — you'd have to hunt down and rewrite every direct
-   ncurses call scattered through your actual game logic instead of just
-   the one file that was supposed to own all of them.
-
-4. No fixed answer — HP is a strong, natural choice, since it's the stat
-   most likely to change *during* wandering once encounters exist. The
-   mechanical shape: somewhere in `draw_world`, after the tile-drawing
-   loop and before (or after) the existing `render_draw_text` call for
-   controls, something like `render_draw_text(0, MAP_HEIGHT + 2, "HP: ...")`
-   — though building the actual text (an `int` combined with a string)
-   needs `snprintf`, which is properly Chapter 12's territory. Naming
-   where it would go is the goal here, not building it yet.
+3. See `02-render-boundary/SOLUTION.md`. You lose the opaque boundary:
+   game files start including backend headers and a second backend means
+   editing every present call site.
+4. HP is the natural first HUD line; draw after the map, at
+   `VIEW_HEIGHT + 1` or similar, once you own `snprintf`.
 
 </details>
 
 ## Next up
 
 The map right now is small enough to fit entirely on screen at once. Real
-JRPG worlds aren't. Chapter 9 introduces the camera: a moving window onto
+RPG worlds aren't. Chapter 9 introduces the camera: a moving window onto
 a world larger than your terminal, using modular arithmetic and clamping
 to decide exactly what's visible at any moment.

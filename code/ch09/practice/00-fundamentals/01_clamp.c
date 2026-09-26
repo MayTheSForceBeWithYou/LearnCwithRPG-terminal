@@ -1,0 +1,56 @@
+/*
+ * Drill 01 — clamp
+ *
+ * Implement clamp(). Fill in the TODO tests' expected values by reasoning
+ * first, then run. When every CHECK passes, you are done.
+ *
+ * Build:  gcc -std=c17 -Wall -Wextra -Wpedantic -o 01_clamp 01_clamp.c
+ * Run:    ./01_clamp
+ */
+#include <stdio.h>
+#include <stdlib.h>
+
+static int g_failures = 0;
+
+static void check(int cond, const char *msg)
+{
+    if (!cond) {
+        fprintf(stderr, "FAIL: %s\n", msg);
+        g_failures++;
+    }
+}
+
+/* TODO: implement — return value constrained to [low, high].
+ * Precondition for this drill: low <= high.
+ * If value < low return low; if value > high return high; else value.
+ */
+static int clamp(int value, int low, int high)
+{
+    (void)value;
+    (void)low;
+    (void)high;
+    /* replace this stub */
+    return 0;
+}
+
+int main(void)
+{
+    check(clamp(5, 0, 10) == 5, "inside range stays put");
+    check(clamp(-3, 0, 10) == 0, "below low -> low");
+    check(clamp(99, 0, 10) == 10, "above high -> high");
+    check(clamp(0, 0, 10) == 0, "equal to low");
+    check(clamp(10, 0, 10) == 10, "equal to high");
+    check(clamp(7, 7, 7) == 7, "degenerate single-point range");
+
+    /* Camera-shaped bounds: max camera x = MAP_W - VIEW_W */
+    check(clamp(25 - 10, 0, 40 - 20) == 15, "center-ish cam x");
+    check(clamp(1 - 10, 0, 40 - 20) == 0, "near left edge clamps to 0");
+    check(clamp(39 - 10, 0, 40 - 20) == 20, "near right edge clamps to max");
+
+    if (g_failures) {
+        fprintf(stderr, "%d check(s) failed\n", g_failures);
+        return 1;
+    }
+    puts("01_clamp: all checks passed");
+    return 0;
+}

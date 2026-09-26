@@ -211,6 +211,28 @@ the space; repeat. The subtleties are all in the edge cases — a word
 longer than the line, trailing spaces, running out of lines — which is
 exactly why it's worth writing once, carefully, in its own module.
 
+
+### Truncation is a signal, not a surprise
+
+`snprintf` returns the length it *would* have written, not counting the
+NUL — even when it truncates. That return value is how you detect "didn't
+fit" without walking the buffer afterward:
+
+```c
+char buf[8];
+int n = snprintf(buf, sizeof buf, "%s", "abcdefghij");
+/* n == 10, buf holds "abcdefg" + NUL — seven chars of content */
+if (n < 0 || (size_t)n >= sizeof buf) {
+    /* truncated or encoding error — decide: widen, paginate, or fail */
+}
+```
+
+Dialog wrapping must obey the same idea: the module's line buffers are a
+hard ceiling; any caller-requested width is clamped down to what those
+buffers can hold. Practice `02_snprintf_trunc` and `05_word_wrap` before
+you trust a longer NPC speech in the live game.
+
+
 ## Apply it
 
 ### The dialog module
@@ -625,65 +647,40 @@ value when it matters.
 
 ## Exercises
 
-1. Change `DIALOG_LINE_LEN` to `12` but leave `TEXTBOX_WIDTH` alone.
-   What happens to the text box, and why doesn't it overflow? (Trace which
-   clamp in `dialog_start` saves you.)
-2. Give the gatekeeper a much longer speech — five or six sentences — and
-   read it all the way through. How many pages does it take? Now write a
-   test that proves **no text is lost**: page through a speech collecting
-   every line, and compare the result word-by-word against the original.
-3. `dialog_advance` returns `0` when the conversation is over, and the
-   caller uses that to leave dialog mode. What happens if you ignore the
-   return value and always stay in dialog mode? Try it, then explain why
-   returning a value the caller must act on is better here than the
-   `Dialog` silently resetting itself.
-4. *Open-ended:* NPC speech is currently a string literal compiled into
-   the program — exactly the problem Chapter 11 solved for maps. Sketch a
-   file format for dialogue. What has to go in it besides the text itself,
-   if an NPC is eventually going to say different things depending on what
-   you've done?
+> **Practice drills:** `code/ch12/practice/` (`01_strlen_sizeof`–
+> `05_word_wrap`) before exercise 2. Do not paste wrap logic into the game
+> to skip the reps — the durable dialog module already owns wrapping.
+
+1. *Reading / clamp.* Change `DIALOG_LINE_LEN` to `12` but leave
+   `TEXTBOX_WIDTH` alone. Trace which clamp in `dialog_start` prevents
+   overflow. Restore afterward (or keep only if you also shrink related
+   buffers consistently — lasting configs must agree).
+2. *Practice (required) + property test.* Finish the practice folder.
+   Then write a **standalone** (or practice) token-round-trip test for a
+   long speech: page with `dialog_start` / `dialog_advance`, rebuild
+   tokens, compare to the original. Keep that test; it is how you prove
+   paging does not drop words (see solutions for the shape).
+3. *Durable caller contract.* What happens if `main` ignores
+   `dialog_advance`'s return and never leaves dialog mode? Try briefly,
+   restore. Explain why a return value the caller must honor beats a
+   silently self-resetting `Dialog`.
+4. *Open-ended:* Sketch an on-disk dialogue format (Chapter 11 for maps).
+   What besides raw text must live in the file if speech depends on story
+   flags later?
 
 <details>
 <summary>Solutions</summary>
 
-1. `TEXTBOX_WIDTH` is `VIEW_WIDTH - 2` = 18, but `DIALOG_LINE_LEN - 1` is
-   now 11, so the first clamp in `dialog_start` reduces `width` to 11.
-   Lines wrap much more narrowly than the box allows — visually worse,
-   but perfectly safe. That clamp is doing exactly the job it was written
-   for: the module refuses to write more than its own buffers hold,
-   regardless of what the caller asks for. Had it trusted `width`, this
-   change would have written 18 bytes into 12-byte lines.
-
-2. A six-sentence speech takes two or three pages at width 18. The
-   round-trip test is the valuable part:
-   ```c
-   char rebuilt[2048] = {0};
-   Dialog d;
-   dialog_start(&d, text, 18);
-   do {
-       for (int i = 0; i < d.line_count; i++) {
-           strcat(rebuilt, d.lines[i]);
-           strcat(rebuilt, " ");
-       }
-   } while (dialog_advance(&d));
-   /* then compare rebuilt against text, token by token */
-   ```
-   Comparing *tokens* rather than raw strings is what makes this work,
-   since wrapping legitimately changes where the spaces are. This exact
-   test is what proved the paging correct for every speech in the game —
-   and an earlier version of this course shipped without it and silently
-   truncated all six NPC speeches.
-
-3. The conversation never ends: the last page stays on screen and every
-   keypress re-runs `dialog_advance`, which keeps returning `0` and
-   clearing `line_count` — so you get an empty box you cannot escape
-   except by quitting. Returning a value is better than self-resetting
-   because *the caller owns the mode*. `dialog.c` has no idea `MODE_DIALOG`
-   exists and shouldn't; its job is to answer "was there more?" and let
-   `game.c` decide what that means. A module that reached out and changed
-   the game's mode would be exactly the coupling Chapter 8's renderer
-   abstraction was built to avoid.
-
+1. `dialog_start` clamps width to `DIALOG_LINE_LEN - 1`. Narrower wrap,
+   still safe. Mismatched constants without clamping would overflow.
+2. Practice solutions under `solutions/`. Round-trip: collect lines across
+   pages, tokenize, compare to original tokens — not raw concatenated
+   strings (wrapping changes spaces).
+3. Last page sticks; further advances return 0 and clear lines — empty box,
+   no escape except quit. Explicit return forces a mode transition at the
+   call site (Chapter 14 will make that a dispatch row).
+4. IDs, optional condition flags, speaker name, maybe paging hints.
+   Keep old one-speech files loadable.
 
 </details>
 

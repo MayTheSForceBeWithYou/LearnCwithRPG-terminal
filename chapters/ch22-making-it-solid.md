@@ -685,19 +685,24 @@ isn't one above `render_init` — which is the answer.
 
 ## Exercises
 
-1. Reintroduce the uninitialised read: remove the `memset` from
-   `entity_create_player` and run `make valgrind`. How many errors come
-   back — and why is that number surprising? Then run the *game* under
-   memcheck and count again. Finally run `make sanitize` and play — does
-   ASan say anything?
-2. Add an assertion to `combat_base_damage` stating that the result is
-   never below 1. Then temporarily delete the floor and run the tests.
-   Which fires first, the assertion or the existing test — and which
-   message would you rather debug from?
-3. Build with `-DNDEBUG` and confirm the assertions are gone (try
-   deliberately violating one). Should this game ship with assertions
-   enabled or disabled? Argue both sides: what does a player gain from a
-   crash, versus from continuing with a corrupted state?
+> **Practice drills:** work `code/ch22/practice/` — scenario folders
+> `01-tool-coverage/` and `02-assertions-vs-tests/`, plus micros
+> `01_assert_floor`, `02_ndebug_toy`, `03_fuzz_tokens` (`make && make check`).
+> Do **not** remove production `memset`, delete the damage floor in
+> `combat_math`, or strip asserts from the game to rehearse these lessons.
+
+1. *Tool coverage (practice).* Complete `01-tool-coverage`. In your own words:
+   why can `make valgrind` on the *test* binary stay clean while the *game*
+   still has an uninitialised read? Optional: run the drill's covered path
+   under memcheck — still leave production `entity_create_player` alone.
+2. *Assertions vs tests (practice).* Complete `02-assertions-vs-tests`. Use
+   `make demo-assert` to drop the floor in the **drill only**, then compare
+   abort-at-line versus multi-FAIL messages that name inputs. Keep the
+   production floor.
+3. *Product decision (`NDEBUG`).* Build a drill (or the game) with `-DNDEBUG`
+   and confirm asserts compile away (`02_ndebug_toy` is the toy). Should this
+   game ship with assertions enabled or disabled? Argue both sides: crash with
+   a file:line versus continuing with a corrupted save.
 4. *Open-ended:* The fuzzer generates random *files*. Sketch a fuzzer for
    random *save files specifically* — structurally valid `key = value`
    lines with random values. Why would that find different bugs than the
@@ -706,87 +711,20 @@ isn't one above `render_init` — which is the answer.
 <details>
 <summary>Solutions</summary>
 
-1. **Zero**, and that is the whole point of the exercise. `make valgrind`
-   runs `run_tests`, and the test suite never calls
-   `entity_create_player` — the function reads a name from `stdin`, so
-   there is no way for a test to drive it. A tool can only report on code
-   that actually executes.
-
-   Run the game instead — under the pty driver, or just play it and quit
-   properly — and the bug appears immediately, before you have taken a
-   single step:
-
-   ```bash
-   valgrind --track-origins=yes ./game
-   ```
-
-   ```
-   ==225437== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)
-   ```
-
-   Two errors — `party.c:171` and `party.c:174`, the clamps that read `hp`
-   and `mp`, both originating at the bare `Player p;` in
-   `entity_create_player`.
-
-   ASan, meanwhile, says nothing at all: the game plays normally, reports
-   no diagnostics, and behaves exactly as it always has. That contrast,
-   reproduced by hand, is the most convincing possible argument for
-   running both tools — and for remembering that "the test suite is
-   clean" and "the program is clean" are different claims.
-
-2. The assertion fires first — but only just, and the comparison is more
-   interesting than "assertions win."
-
-   With the assertion in place, the run ends immediately:
-
-   ```
-   run_tests: combat_math.c:21: combat_base_damage: Assertion `base >= 1' failed.
-   ```
-
-   Without it, the same deleted floor produces:
-
-   ```
-   base damage
-     FAIL test_combat.c:30: combat_base_damage(5, 0, 40) == -15, expected 1
-   ...
-   301314 checks, 3 failed
-   ```
-
-   Each tells you something the other doesn't. The assertion names the
-   line *inside the function that computed the bad value* — you don't
-   have to go looking for it. The test names **the inputs and the wrong
-   answer** (`(5, 0, 40)` gave `-15`), which the assertion never shows,
-   and it keeps going: three checks fail, so you learn the floor is
-   load-bearing in three places rather than one.
-
-   Note also what the assertion costs: `abort()` does not flush `stdout`,
-   so the buffered progress line telling you *which test* was running can
-   be lost. That is worth knowing before you debug at 2am.
-
-   Tests tell you *that* something broke, and with what inputs;
-   assertions tell you *where* it broke, at the moment it broke. Neither
-   replaces the other — which is why the answer is to keep both.
-
-3. With `-DNDEBUG` the asserts compile to nothing and a violated
-   invariant proceeds silently. For a single-player game whose worst
-   failure is a lost session, shipping with assertions **enabled** is
-   defensible — a crash with a file and line produces a fixable bug
-   report, while continuing produces a corrupted save the player keeps
-   using. For software where a crash costs more than wrong behaviour (a
-   flight controller, a database mid-write), the calculus reverses. The
-   real answer is that this is a product decision, not a technical one,
-   and the common practice of "assertions off in release" is a default
-   rather than a law.
-
-4. A structural fuzzer generates files that get *past* the tokeniser and
-   into the semantic checks — `level = -2147483648`, `item = 5 0`,
-   duplicate keys, a `version` line appearing twice, fields in unexpected
-   order. The character-level fuzzer mostly exercises rejection paths,
-   because random bytes rarely form a valid `key = value`. The structural
-   one is far more likely to find a real bug, because the interesting
-   logic is *after* parsing succeeds. The general principle: fuzz at the
-   layer where the logic is, not just at the front door. (Both are worth
-   having; the cheap one runs first.)
+1. See `01-tool-coverage/SOLUTION.md`. Tools only report paths that execute.
+   The chapter's `run_tests` never called `entity_create_player`; the game
+   path did. Practice encodes that as `test_suite_path` vs `covered_path`.
+2. See `02-assertions-vs-tests/SOLUTION.md`. Assert names the broken line
+   inside the function; tests name inputs/expected and can keep going.
+   Neither replaces the other — keep both. `DEMO_BAD_FLOOR` is the reading
+   exhibit; production keeps the floor.
+3. With `-DNDEBUG` asserts become nothing. For a single-player RPG whose
+   worst failure is a lost session, shipping with assertions **enabled** is
+   defensible. For software where a crash costs more than wrong behaviour,
+   the calculus reverses. Product decision, not a law.
+4. A structural fuzzer gets past the tokeniser into semantic checks
+   (`level = -2147483648`, duplicate keys, …). Character-level fuzz mostly
+   hits rejection paths. Fuzz at the layer where the logic is.
 
 </details>
 

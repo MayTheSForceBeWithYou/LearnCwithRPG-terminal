@@ -160,6 +160,17 @@ Note the `if (player->hp <= 0)` check *inside* the loop, not after it.
 Without it, a dead hero keeps taking hits from the remaining enemies in
 the same round — mechanically harmless but nonsense to read in the log.
 
+
+### Fight-scoped state vs hero-scoped state
+
+A flag like "defending this round" belongs on `Battle`, not on `Player`.
+Hero fields survive the fight and every exit path; battle fields die with
+the encounter. Clear round-scoped flags at a single, boring place (end of
+`battle_round`) — too early and defend never works; too late and it lasts
+forever. Practice `01_defend_flag` engrains the lifetime before you touch
+`battle.c`.
+
+
 ## Apply it
 
 ### Levels, from a table
@@ -582,66 +593,32 @@ terminate.
 
 ## Exercises
 
-1. Enemies currently attack whoever they like — which, with a solo hero, is
-   always you. Add a `defend` action (`d` in battle) that halves incoming
-   damage for one round. Where does the "defending" state have to live, and
-   when must it be cleared?
-2. Run the simulation harness yourself (it's in the chapter above; link it
-   against `battle.c`, `party.c`, `combat_math.c`, and `rng.c`). Then change
-   `battle_max_group_for_level` to allow 2 enemies from level 2 instead of
-   3 and re-measure. Is the curve better or worse, and how would you decide?
-3. `battle_finish` gives XP and gold on a win but nothing on a flee. Real
-   JRPGs vary here. Add partial XP for enemies actually killed before
-   fleeing — note that `battle->xp_reward` already accumulates per kill, so
-   how much code does this actually take?
-4. *Open-ended:* Wetwood Barrow's enemies are much stronger than Grubbin
-   Vale's, but nothing stops a level 1 hero walking straight there. Sketch
-   two different ways to handle that — one using data you already have, one
-   requiring something new — and say which you'd pick.
+> **Practice drills:** `code/ch16/practice/` (`01_defend_flag`–
+> `04_win_rate_toy`) before exercise 2.
+
+1. *Practice.* Complete the practice folder — especially defend lifetime
+   and reward accumulation on flee.
+2. *Durable — defend.* Add a battle `defend` action (`d`) that halves
+   incoming damage for one round. State on `Battle`; clear at end of
+   round. Keep it.
+3. *Durable — flee XP.* Grant accumulated `xp_reward` / `gold_reward` on
+   flee (already tallied per kill). Tiny change; keep it.
+4. *Measure, don't guess.* Run the chapter simulation harness; optionally
+   tweak `battle_max_group_for_level` in a **branch or throwaway build**,
+   re-measure, restore the lasting curve you want. Practice `04_win_rate_toy`
+   shows why fixed seeds matter for comparison.
+5. *Open-ended:* Gate over-level areas — data you have vs something new.
 
 <details>
 <summary>Solutions</summary>
 
-1. It belongs on `Battle` (say `int defending;`), not on `Player` — it's a
-   property of this fight, not of the hero, and putting it on `Player`
-   means it survives the battle and has to be remembered on every exit
-   path. Set it when the action is chosen, apply it in `enemy_attacks`
-   (`damage /= 2;`), and **clear it at the end of `battle_round`**, after
-   all enemies have acted. Clearing it too early makes defending useless;
-   forgetting to clear it makes the hero permanently armoured, which is a
-   bug that looks like good luck for a long time.
-
-2. Allowing pairs from level 2 makes level 2 much harder (roughly 17% win
-   rate against 2 enemies at that level, from the measurements above) and
-   removes the comfortable level-2 breather. Worse, on the evidence. The
-   way to decide is exactly what this chapter did: change one thing,
-   re-run thousands of fights, and look at the whole curve rather than a
-   single level — a change that helps level 4 while ruining level 2 is not
-   an improvement.
-
-3. Almost none:
-   ```c
-   } else if (battle->outcome == BATTLE_FLED) {
-       int levels = party_gain_xp(&game->player, battle->xp_reward);
-       game->player.gold += battle->gold_reward;
-       snprintf(line, sizeof line, "You got away with %d XP.",
-                battle->xp_reward);
-   ```
-   `xp_reward` and `gold_reward` are accumulated in `hero_attacks` as each
-   enemy dies, so they already hold exactly the right amount. That's a
-   small payoff for having accumulated rewards at kill time rather than
-   counting corpses at the end — worth noticing as a design instinct.
-
-4. Using data you already have: gate the warp. `Warp` could gain a
-   `min_level` field, and `explore_handle` refuses the transition with a
-   message ("The barrow road is not for beginners") when the hero is below
-   it — a couple of lines, and it reuses the table-driven approach from
-   Chapter 13. Requiring something new: the key-item gating the content
-   bible actually describes, where Mudwick needs Fragment I and The Sump
-   needs the Brass Key — which needs an inventory to hold key items, which
-   is Chapter 17. The key-item version is better because it's diegetic and
-   ties progression to the story rather than to a number, but the level
-   gate is a perfectly good stopgap and costs almost nothing.
+1. See `code/ch16/practice/solutions/`.
+2. `int defending` on `Battle`; set on action; `damage /= 2` in enemy
+   attacks; clear at end of `battle_round`.
+3. In flee finish path, grant `battle->xp_reward` (and gold) — already
+   accumulated.
+4. Decide from the whole win-rate curve, not one level.
+5. e.g. warp level gate vs new "danger" flag on areas.
 
 </details>
 
