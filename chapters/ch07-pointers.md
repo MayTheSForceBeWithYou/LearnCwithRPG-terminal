@@ -40,8 +40,8 @@ hp lives at:      0x7ffd7d594294
 `%p` is the format specifier for printing addresses, and it specifically
 expects a `void *` — a generic pointer type meaning "an address, type
 unspecified" — which is why the cast `(void *)&hp` appears; without it,
-`gcc` would warn about a format mismatch, the exact same family of warning
-from Chapter 2. Your address will differ from the one above every time you
+`gcc` would warn about a format mismatch, the exact same family of [warning
+from Chapter 2](ch02-data-and-input.md#a-mismatched-format-specifier--caught-by-the-compiler). Your address will differ from the one above every time you
 run the program — the operating system decides where things live, and
 that decision isn't something your code controls or should rely on.
 
@@ -80,12 +80,12 @@ pointer confusion beginners hit:
 ```
 Stack memory (addresses made up for illustration):
 
-  0x7ffd...294  +--------+
-  hp            |   20   |  <-- *hp_ptr = 5 changes THIS box
-                +--------+        to 5, not hp_ptr itself
-  0x7ffd...0cc  +--------+
+  0x7ffd...294  +--------------+
+  hp            |      20      |  <-- *hp_ptr = 5 changes THIS box
+                +--------------+        to 5, not hp_ptr itself
+  0x7ffd...0cc  +--------------+
   hp_ptr        | 0x7ffd...294 |  <-- hp_ptr's own value: an address
-                +--------+
+                +--------------+
 ```
 
 ### Pass-by-reference: fixing `entity_move`, in miniature
@@ -401,15 +401,15 @@ same memory `main`'s `player` occupies and modifies it there — no copy,
 no discard-on-return, because there was never a second copy to discard.
 
 ```
-main's player                       entity_move's p
-+----------------+                   (a pointer, not a copy)
-| name: "Elowen" |  <------------+
-| x: 1  -> 2      |  <--- p->x += dx reaches all the way back here
+main's player                entity_move's p holds player's address
++----------------+                 (a pointer, not a copy)
+| name: "Elowen" |  <------------------+
+| x: 1  -> 2     |  <--------- p->x += dx reaches all the way back here
 | y: 1           |   |
 | hp: 20 ...     |   |
 +----------------+   |
         ^            |
-        |    p holds player's address
+        |  p         |
         +------------+
 ```
 

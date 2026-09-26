@@ -287,7 +287,7 @@ int main(void)
 {
     printf("****************************************\n");
     printf("*                                      *\n");
-    printf("*          UNTITLED JRPG               *\n");
+    printf("*           UNTITLED RPG               *\n");
     printf("*                                      *\n");
     printf("****************************************\n");
 
@@ -335,7 +335,7 @@ Zero warnings. Expected output (name `Elowen`):
 ```
 ****************************************
 *                                      *
-*          UNTITLED JRPG               *
+*           UNTITLED RPG               *
 *                                      *
 ****************************************
 What is your name, hero? Elowen
@@ -393,7 +393,7 @@ actually care about, was never touched.
 main's player                    entity_move's p (a full copy)
 +----------------+                +----------------+
 | name: "Elowen" |                | name: "Elowen" |
-| x: 1           |   copied in    | x: 1  -> 2      |  (changed HERE)
+| x: 1           |   copied in    | x: 1  -> 2     |  (changed HERE)
 | y: 1           |  ------------> | y: 1           |
 | hp: 20 ...     |                | hp: 20 ...     |
 +----------------+                +----------------+
@@ -466,7 +466,7 @@ it.
    a return-value-based fix. (You don't need it to compile — Chapter 7
    covers a cleaner fix. This is about predicting the shape of a solution
    from what you already know.)
-4. *Open-ended:* Real JRPGs usually have more than one party member.
+4. *Open-ended:* Real RPGs usually have more than one party member.
    Sketch (comments only, no working code required) what an `Npc` or
    second-party-member struct might share with `Player`, and what would
    need to differ.

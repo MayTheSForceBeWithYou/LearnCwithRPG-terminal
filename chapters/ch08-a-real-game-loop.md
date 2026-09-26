@@ -93,8 +93,7 @@ plain `int` did the job, by convention rather than by the type system).
 `render_init` uses it because "did the display start up successfully?" is
 exactly the kind of genuinely two-valued question `bool` was made for.
 
-`render_ncurses.c` — the only file in your entire project allowed to
-`#include <ncurses.h>`:
+`render_ncurses.c`:
 
 ```c
 #include <ncurses.h>
@@ -257,7 +256,7 @@ int main(void)
 {
     printf("****************************************\n");
     printf("*                                      *\n");
-    printf("*          UNTITLED JRPG               *\n");
+    printf("*           UNTITLED RPG               *\n");
     printf("*                                      *\n");
     printf("****************************************\n");
 
@@ -399,15 +398,15 @@ works completely unchanged afterward, needing Enter again just like every
 earlier chapter.
 
 ```
-Before render_init()          After render_init()           After render_shutdown()
-  (canonical mode)               (cbreak mode)                (canonical mode, restored)
-+------------------+          +------------------+          +------------------+
-| keypress -> OS    |          | keypress -> OS    |          | keypress -> OS    |
-| buffers whole line |          | delivers key      |          | buffers whole line |
-| waits for Enter   |          | to program         |          | waits for Enter   |
-| THEN hands to      |          | INSTANTLY          |          | THEN hands to      |
-| your program       |          |                    |          | your program       |
-+------------------+          +------------------+          +------------------+
+Before render_init()            After render_init()           After render_shutdown()
+ (canonical mode)                (cbreak mode)                 (canonical mode, restored)
++--------------------+          +------------------+          +--------------------+
+| keypress -> OS     |          | keypress -> OS   |          | keypress -> OS     |
+| buffers whole line |          | delivers key     |          | buffers whole line |
+| waits for Enter    |          | to program       |          | waits for Enter    |
+| THEN hands to      |          | INSTANTLY        |          | THEN hands to      |
+| your program       |          |                  |          | your program       |
++--------------------+          +------------------+          +--------------------+
 ```
 
 ## Common errors

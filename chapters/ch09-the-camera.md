@@ -6,7 +6,7 @@ Chapter 8 gave you a real game loop: ncurses draws the screen, keys
 register instantly, and the whole rendering layer hides behind
 `render.h` so your game logic never mentions ncurses at all. But the world
 is still a 10×5 room that fits comfortably on screen with room to spare.
-Real JRPG worlds don't fit on screen — that's the entire reason walking
+Real RPG worlds don't fit on screen — that's the entire reason walking
 around them is interesting. This chapter makes the world four times bigger
 than the visible area and introduces the thing that decides what you can
 see: the camera.

@@ -564,7 +564,7 @@ motivating example for why every header needs one.
 ## Next up
 
 Your character sheet currently shows one hero's stats with individually
-named variables (`hp`, `mp`, `attack`...). A real JRPG has a *world* to
+named variables (`hp`, `mp`, `attack`...). A real RPG has a *world* to
 walk around in — and a world is naturally a grid. Chapter 5 introduces
 arrays, including the two-dimensional kind, and puts a map on screen for
 the first time.

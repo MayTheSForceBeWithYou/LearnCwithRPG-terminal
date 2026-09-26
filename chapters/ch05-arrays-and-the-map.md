@@ -12,7 +12,7 @@ one to put an actual map on screen for the first time.
 ## The problem
 
 Chapter 2 gave you a fixed-size `char name[64]` buffer without explaining
-how it really works, promising a real answer later. Later is now. A JRPG's
+how it really works, promising a real answer later. Later is now. An RPG's
 world is naturally a grid — rows and columns of tiles — and C's tool for
 "many values of the same type, addressed by position" is the array. You
 need to understand indexing precisely, including its sharpest edge: C does

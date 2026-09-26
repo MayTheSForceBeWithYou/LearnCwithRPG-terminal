@@ -236,7 +236,7 @@ thing standing between you and a crash.
 
 ## Common errors
 
-**A mismatched format specifier — caught by the compiler:**
+### A mismatched format specifier — caught by the compiler:
 
 If you change
 `printf("HP:     %d\n", hp);`
@@ -291,7 +291,7 @@ when you do this, so *anything* could result — a crash (what you saw here),
 silently wrong output, or apparent success that fails later on a different
 machine or compiler. The compiler's warning was your only warning; heed it.
 
-**A buffer too small for the input — `fgets` degrades safely:**
+### A buffer too small for the input — `fgets` degrades safely:
 
 ```c
 char name[4];
@@ -314,8 +314,7 @@ danger described in the spotlight section: this is exactly the failure mode
 buffers exactly right" (you can't always predict input length) — it's "give
 `fgets` a real size and it will never write past it, no matter what."
 
-**Forgetting the `f` suffix on a float literal (not an error, but a common
-`-Wpedantic`-adjacent surprise):**
+### Forgetting the `f` suffix on a float literal (not an error, but a common `-Wpedantic`-adjacent surprise):
 
 ```c
 float power = 5.0;   /* compiles fine, no warning here */
