@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <string.h>
+
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* Simulate ask: accept first char of line; discard rest conceptually via index */
 static char first_of(const char *line)
 {
-    return line[0];
+    return '\0';
 }
 int main(void)
 {

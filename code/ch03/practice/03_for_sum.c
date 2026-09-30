@@ -1,11 +1,11 @@
 #include <stdio.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
+/* TODO: return the sum of 1+...+n using a for loop */
 static int sum_to(int n)
 {
-    int s = 0;
-    for (int i = 1; i <= n; i++) s += i;
-    return s;
+    int sum;
+    return sum;
 }
 int main(void)
 {
