@@ -6,11 +6,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO: exchange *a and *b */
-static void swap(int *a, int *b)
-{
-    (void)a;
-    (void)b;
-}
+static void swap(int *a, int *b);
+
 
 int main(void)
 {

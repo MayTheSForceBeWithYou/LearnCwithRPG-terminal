@@ -16,11 +16,8 @@ typedef enum {
 enum { KEY_UP = 1000, KEY_DOWN = 1001, KEY_LEFT = 1002, KEY_RIGHT = 1003 };
 
 /* TODO */
-static InputEvent input_from_key(int key)
-{
-    (void)key;
-    return INPUT_NONE;
-}
+static InputEvent input_from_key(int key);
+
 
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }

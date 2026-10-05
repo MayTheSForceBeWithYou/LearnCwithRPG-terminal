@@ -3,14 +3,10 @@ typedef struct { int xp_reward; int gold_reward; int fled; int won; } Battle;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: on kill add xp/gold; finish returns xp to grant (full if won, accumulated if fled) */
-static void on_kill(Battle *b, int xp, int gold)
-{
-    (void)b;(void)xp;(void)gold;
-}
-static int xp_on_finish(const Battle *b)
-{
-    (void)b; return -1;
-}
+static void on_kill(Battle *b, int xp, int gold);
+
+static int xp_on_finish(const Battle *b);
+
 int main(void)
 {
     Battle b = {0};

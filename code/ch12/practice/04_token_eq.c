@@ -4,10 +4,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: true if a and b have same sequence of whitespace-separated tokens */
-static int tokens_equal(const char *a, const char *b)
-{
-    (void)a;(void)b; return 0;
-}
+static int tokens_equal(const char *a, const char *b);
+
 int main(void)
 {
     check(tokens_equal("one two three", "one  two   three") == 1, "extra spaces");

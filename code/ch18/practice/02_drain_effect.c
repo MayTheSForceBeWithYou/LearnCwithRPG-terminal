@@ -3,10 +3,8 @@ typedef struct { int hp; int max_hp; } Actor;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: damage target by mag; heal caster by mag/2 capped at max_hp */
-static void drain(Actor *caster, Actor *target, int mag)
-{
-    (void)caster;(void)target;(void)mag;
-}
+static void drain(Actor *caster, Actor *target, int mag);
+
 int main(void)
 {
     Actor c = {10, 20}, t = {30, 30};

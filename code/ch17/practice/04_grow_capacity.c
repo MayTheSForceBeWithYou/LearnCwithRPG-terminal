@@ -4,16 +4,8 @@ typedef struct { int id; int qty; } Stack;
 typedef struct { Stack *s; int count; int cap; } Inv;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static int ensure(Inv *inv, int need)
-{
-    if (need <= inv->cap) return 1;
-    int ncap = inv->cap ? inv->cap * 2 : 4;
-    while (ncap < need) ncap *= 2;
-    Stack *p = realloc(inv->s, (size_t)ncap * sizeof *p);
-    if (!p) return 0;
-    inv->s = p; inv->cap = ncap;
-    return 1;
-}
+/* TODO: grow capacity (double, from 0->4) until need fits; realloc */
+static int ensure(Inv *inv, int need);
 static int inv_add(Inv *inv, int id, int n)
 {
     if (!ensure(inv, inv->count + 1)) return 0;

@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: level 1 -> max 1; level 2-3 -> max 2; else max 3 (toy policy) */
-static int max_group(int level)
-{
-    (void)level; return 0;
-}
+static int max_group(int level);
+
 int main(void)
 {
     check(max_group(1)==1, "L1");

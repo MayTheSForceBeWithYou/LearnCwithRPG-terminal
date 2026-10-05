@@ -4,10 +4,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 enum { MAX_LINES = 8, LINE_LEN = 16 };
 /* TODO: wrap words into lines[][]; return line count; never exceed width */
-static int wrap(const char *text, int width, char lines[MAX_LINES][LINE_LEN])
-{
-    (void)text;(void)width;(void)lines; return 0;
-}
+static int wrap(const char *text, int width, char lines[MAX_LINES][LINE_LEN]);
+
 int main(void)
 {
     char lines[MAX_LINES][LINE_LEN];

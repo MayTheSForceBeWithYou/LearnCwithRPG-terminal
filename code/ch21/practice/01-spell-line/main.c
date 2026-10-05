@@ -4,10 +4,8 @@ typedef struct { int level, mp, mag; char effect[16]; char name[32]; } Spell;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: parse "level mp mag effect name..." — name may contain spaces via %31[^\n] after effect */
-static int parse_spell_line(const char *line, Spell *out)
-{
-    (void)line;(void)out; return 0;
-}
+static int parse_spell_line(const char *line, Spell *out);
+
 int main(void)
 {
     Spell s;

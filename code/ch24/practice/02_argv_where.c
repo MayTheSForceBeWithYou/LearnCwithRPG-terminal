@@ -2,10 +2,8 @@
 #include <string.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static int wants_where(int argc, char **argv)
-{
-    return argc >= 2 && strcmp(argv[1], "--where") == 0;
-}
+/* TODO: true when argv[1] is "--where" */
+static int wants_where(int argc, char **argv);
 int main(void)
 {
     char *a[] = { "game", "--where" };

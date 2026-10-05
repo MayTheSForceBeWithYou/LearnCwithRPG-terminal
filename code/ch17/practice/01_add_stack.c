@@ -5,10 +5,8 @@ typedef struct { Stack s[MAX]; int count; } Inv;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: if id exists, qty+=n; else new stack if room; return 1/0 */
-static int inv_add(Inv *inv, int id, int n)
-{
-    (void)inv;(void)id;(void)n; return 0;
-}
+static int inv_add(Inv *inv, int id, int n);
+
 int main(void)
 {
     Inv inv = {0};

@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: clamp hp into [0, max_hp] — game logic, not the type system */
-static int clamp_hp(int hp, int max_hp)
-{
-    (void)hp;(void)max_hp; return -999;
-}
+static int clamp_hp(int hp, int max_hp);
+
 int main(void)
 {
     check(clamp_hp(-5, 20)==0, "floor");

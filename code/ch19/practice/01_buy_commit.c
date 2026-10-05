@@ -12,10 +12,8 @@ static int inv_add(Inv *inv, int id)
     return 1;
 }
 /* TODO: if can add AND gold>=price, add then charge; else fail with no side effects */
-static int buy(Buyer *b, int id, int price)
-{
-    (void)b;(void)id;(void)price; return 0;
-}
+static int buy(Buyer *b, int id, int price);
+
 int main(void)
 {
     Buyer b = { .gold = 100 };

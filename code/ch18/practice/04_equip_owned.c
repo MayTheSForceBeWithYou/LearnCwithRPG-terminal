@@ -9,10 +9,8 @@ static int owns(const Owned *o, int id)
     return 0;
 }
 /* TODO: set *equipped = id only if owned */
-static int try_equip(Owned *o, int *equipped, int id)
-{
-    (void)o;(void)equipped;(void)id; return 0;
-}
+static int try_equip(Owned *o, int *equipped, int id);
+
 int main(void)
 {
     Owned o = { .ids = {3,7}, .count = 2 };

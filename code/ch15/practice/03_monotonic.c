@@ -1,11 +1,8 @@
 #include <stdio.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static int base_damage(int atk, int def)
-{
-    int d = atk - def / 2;
-    return d < 1 ? 1 : d;
-}
+/* TODO: damage that never rises as def grows (floor at 1) */
+static int base_damage(int atk, int def);
 int main(void)
 {
     int prev = base_damage(10, 0);

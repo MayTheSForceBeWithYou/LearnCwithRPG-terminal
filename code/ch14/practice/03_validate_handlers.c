@@ -6,10 +6,8 @@ static void h(void){}
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: return 1 if every mode has non-NULL draw and handle */
-static int validate(const Mode *t, int n)
-{
-    (void)t;(void)n; return 0;
-}
+static int validate(const Mode *t, int n);
+
 int main(void)
 {
     Mode ok[] = { {d,h}, {d,h} };

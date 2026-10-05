@@ -1,5 +1,7 @@
 #include <stdio.h>
-typedef enum { AREA_A, AREA_B, AREA_C, AREA_COUNT } AreaId;
+/* TODO: AREA_A, AREA_B, AREA_C, then AREA_COUNT */
+typedef enum {
+} AreaId;
 static const char *names[AREA_COUNT] = { "A", "B", "C" };
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }

@@ -3,10 +3,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: fill dst with snprintf; return would-be length (snprintf return) */
-static int fmt_into(char *dst, size_t dst_sz, const char *name, int hp)
-{
-    (void)dst;(void)dst_sz;(void)name;(void)hp; return -1;
-}
+static int fmt_into(char *dst, size_t dst_sz, const char *name, int hp);
+
 int main(void)
 {
     char buf[8];

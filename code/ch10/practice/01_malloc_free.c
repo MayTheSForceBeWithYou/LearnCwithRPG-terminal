@@ -9,7 +9,8 @@ static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m);
 
 int main(void)
 {
-    int *scores = malloc(3 * sizeof *scores);
+    /* TODO: replace ALLOC_THREE_INTS with a malloc of 3 ints */
+    int *scores = ALLOC_THREE_INTS;
     check(scores != NULL, "malloc");
     if (!scores) return 1;
     scores[0] = 10; scores[1] = 20; scores[2] = 30;

@@ -12,10 +12,8 @@
 typedef struct { int x; int y; } Point;
 
 /* TODO: set p->x and p->y */
-static void fill_point(Point *p, int x, int y)
-{
-    (void)p; (void)x; (void)y;
-}
+static void fill_point(Point *p, int x, int y);
+
 
 /*
  * BROKEN PATTERN — for reading only:

@@ -3,14 +3,10 @@ typedef struct { int defending; int hp; } Battle;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: apply incoming damage; if defending, half (integer), then clear flag */
-static void enemy_hit(Battle *b, int damage)
-{
-    (void)b;(void)damage;
-}
-static void end_round(Battle *b)
-{
-    (void)b;
-}
+static void enemy_hit(Battle *b, int damage);
+
+static void end_round(Battle *b);
+
 int main(void)
 {
     Battle b = { .defending = 1, .hp = 20 };

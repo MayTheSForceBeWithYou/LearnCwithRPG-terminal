@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: percent 1..99; equal agility -> 50 */
-static int flee_chance(int hero_agi, int foe_agi)
-{
-    (void)hero_agi;(void)foe_agi; return 0;
-}
+static int flee_chance(int hero_agi, int foe_agi);
+
 int main(void)
 {
     check(flee_chance(5,5)==50, "equal");

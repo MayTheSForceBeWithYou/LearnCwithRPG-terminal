@@ -1,5 +1,7 @@
 #include <stdio.h>
-typedef enum { RANK_F, RANK_E, RANK_D, RANK_C, RANK_B, RANK_A, RANK_S, RANK_SS } Rank;
+/* TODO: list RANK_F through RANK_SS in order so auto values match the check */
+typedef enum {
+} Rank;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)

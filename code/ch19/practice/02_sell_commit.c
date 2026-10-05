@@ -17,10 +17,8 @@ static int inv_remove(Inv *inv, int id)
     return 0;
 }
 /* TODO: remove first, then pay sell_price; no pay if remove fails */
-static int sell(Seller *s, int id, int sell_price)
-{
-    (void)s;(void)id;(void)sell_price; return 0;
-}
+static int sell(Seller *s, int id, int sell_price);
+
 int main(void)
 {
     Seller s = { .gold = 0, .inv = { .count = 1, .s = {{5,1}} } };

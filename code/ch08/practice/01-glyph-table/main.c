@@ -12,11 +12,8 @@ typedef enum {
 } TileType;
 
 /* TODO */
-static char glyph_for(TileType t)
-{
-    (void)t;
-    return '?';
-}
+static char glyph_for(TileType t);
+
 
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }

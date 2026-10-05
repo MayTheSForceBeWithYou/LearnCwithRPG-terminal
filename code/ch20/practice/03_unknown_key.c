@@ -2,14 +2,8 @@
 #include <string.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static int parse_line(const char *line, int *hp, int *gold)
-{
-    char key[32]; int val;
-    if (sscanf(line, "%31s %d", key, &val) != 2) return 0;
-    if (strcmp(key, "hp")==0) { *hp = val; return 1; }
-    if (strcmp(key, "gold")==0) { *gold = val; return 1; }
-    return 0; /* unknown key → refuse */
-}
+/* TODO: accept hp/gold; return 0 on unknown key */
+static int parse_line(const char *line, int *hp, int *gold);
 int main(void)
 {
     int hp=0, gold=0;

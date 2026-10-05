@@ -7,11 +7,8 @@
 /* Forbidden in this drill: calling a backend refresh from game code. */
 void fake_refresh(void); /* declared only so you can see the name — do not call */
 
-static void draw_world(void)
-{
-    render_draw('@');
-    /* TODO: present the frame through the opaque API */
-}
+static void draw_world(void);
+
 
 int main(void)
 {

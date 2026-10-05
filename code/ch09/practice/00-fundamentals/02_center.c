@@ -31,14 +31,8 @@ static int clamp(int value, int low, int high)
 /* Students: call clamp() from camera_center. */
 
 /* TODO: implement */
-static void camera_center(int target_x, int target_y, int *cam_x, int *cam_y)
-{
-    (void)target_x;
-    (void)target_y;
-    (void)clamp; /* use clamp() in your implementation */
-    *cam_x = 0;
-    *cam_y = 0;
-}
+static void camera_center(int target_x, int target_y, int *cam_x, int *cam_y);
+
 
 int main(void)
 {

@@ -20,19 +20,11 @@ static void check(int cond, const char *msg)
 }
 
 /* TODO */
-static int world_to_screen(int camera, int world)
-{
-    (void)camera;
-    (void)world;
-    return 0;
-}
+static int world_to_screen(int camera, int world);
 
-static int screen_to_world(int camera, int screen)
-{
-    (void)camera;
-    (void)screen;
-    return 0;
-}
+
+static int screen_to_world(int camera, int screen);
+
 
 int main(void)
 {

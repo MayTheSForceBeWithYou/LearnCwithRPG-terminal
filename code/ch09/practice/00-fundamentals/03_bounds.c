@@ -17,19 +17,11 @@ static void check(int cond, const char *msg)
 }
 
 /* TODO: return the maximum legal camera x (inclusive), or -1 if VIEW_W > MAP_W */
-static int max_cam_x(int map_w, int view_w)
-{
-    (void)map_w;
-    (void)view_w;
-    return 0;
-}
+static int max_cam_x(int map_w, int view_w);
 
-static int max_cam_y(int map_h, int view_h)
-{
-    (void)map_h;
-    (void)view_h;
-    return 0;
-}
+
+static int max_cam_y(int map_h, int view_h);
+
 
 int main(void)
 {

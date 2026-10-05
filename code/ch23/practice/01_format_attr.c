@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 #if defined(__GNUC__)
-__attribute__((format(printf, 1, 2)))
+/* TODO: complete the format attribute arguments (printf-style, fmt is arg 1) */
+__attribute__((format FORMAT_ATTR_ARGS))
 #endif
 static void log_linef(const char *fmt, ...)
 {
@@ -14,7 +15,7 @@ static void log_linef(const char *fmt, ...)
 int main(void)
 {
     log_linef("hp=%d", 20);
-    /* Uncomment to see -Wformat: log_linef("%s", 20); */
+    /* After FORMAT_ATTR_ARGS is correct, log_linef("%s", 20) warns under -Wformat. */
     puts("01_format_attr: all checks passed");
     return 0;
 }

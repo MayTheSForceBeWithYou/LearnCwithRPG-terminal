@@ -8,7 +8,10 @@
  * Analog in the real chapter: deleting render_present and calling refresh()
  * from draw_world after #include <ncurses.h> — lasting-path vandalism.
  * Study the dependency cost; leave the playable wrappers intact.
+ *
+ * Unworked gate: remove the #error after reading this header, then `make leak`.
  */
+#error "Read the file header (leak exhibit). Remove this #error, then: make leak"
 #include <stdio.h>
 #include "render_stub.h"
 

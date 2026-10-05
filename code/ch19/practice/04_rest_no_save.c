@@ -3,12 +3,8 @@ typedef struct { int hp; int max_hp; int mp; int max_mp; } Player;
 typedef struct { int saved; } Game; /* pretend */
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-/* Rest knows only Player — must NOT touch Game/save */
-static void shop_rest(Player *p)
-{
-    p->hp = p->max_hp;
-    p->mp = p->max_mp;
-}
+/* TODO: restore hp/mp to max. Must NOT take or touch Game/save */
+static void shop_rest(Player *p);
 int main(void)
 {
     Player p = {1, 20, 0, 10};

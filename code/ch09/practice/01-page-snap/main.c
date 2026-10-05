@@ -27,39 +27,19 @@ static int clamp(int value, int low, int high)
 }
 
 /* Snap world coord down to the start of its page. */
-static int page_origin(int coord, int view_size)
-{
-    /* TODO 1: return the largest multiple of view_size that is <= coord.
-       Hint from the chapter: (coord / view_size) * view_size */
-    (void)coord;
-    (void)view_size;
-    return 0; /* replace */
-}
+static int page_origin(int coord, int view_size);
+
 
 /* Page camera with no clamp — fine when map dims are multiples of view. */
 static void page_camera(int target_x, int target_y, int *cam_x, int *cam_y)
 {
-    /* TODO 2: once page_origin is correct, this is the whole function.
-       Keep these calls; fix page_origin (TODO 1) so the numbers match. */
+    /* Once page_origin is correct, this is the whole function. */
     *cam_x = page_origin(target_x, VIEW_WIDTH);
     *cam_y = page_origin(target_y, VIEW_HEIGHT);
 }
 
-/* Page camera that also clamps — needed when the last page overhangs. */
-static void page_camera_clamped(int target_x, int target_y,
-                                int map_w, int map_h,
-                                int *cam_x, int *cam_y)
-{
-    /* TODO 3: wrap these page origins in clamp(..., 0, map_* - VIEW_*).
-       Starter leaves them unclamped so odd-map EXPECT rows disagree. */
-    int x = page_origin(target_x, VIEW_WIDTH);
-    int y = page_origin(target_y, VIEW_HEIGHT);
-    *cam_x = x;
-    *cam_y = y;
-    (void)map_w;
-    (void)map_h;
-    (void)clamp;
-}
+static void page_camera_clamped(int target_x, int target_y, int map_w, int map_h, int *cam_x, int *cam_y);
+
 
 static void demo_even(void)
 {

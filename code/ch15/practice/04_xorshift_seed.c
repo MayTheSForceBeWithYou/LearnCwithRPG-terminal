@@ -3,12 +3,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 typedef struct { uint32_t s; } Rng;
-static uint32_t rng_next(Rng *r)
-{
-    uint32_t x = r->s;
-    x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-    return r->s = x ? x : 0xDEADBEEFu;
-}
+/* TODO: one xorshift step; never leave state 0 */
+static uint32_t rng_next(Rng *r);
 int main(void)
 {
     Rng a = {12345u}, b = {12345u}, c = {999u};

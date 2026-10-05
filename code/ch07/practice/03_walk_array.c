@@ -6,11 +6,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO: sum len elements starting at p (use pointer increment, not p[i] only) */
-static int sum_ptr(const int *p, int len)
-{
-    (void)p; (void)len;
-    return 0;
-}
+static int sum_ptr(const int *p, int len);
+
 
 int main(void)
 {
