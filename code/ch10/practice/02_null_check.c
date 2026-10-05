@@ -16,11 +16,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO */
-static Pair *make_pair(int av, int bv)
-{
-    (void)av; (void)bv;
-    return NULL;
-}
+static Pair *make_pair(int av, int bv);
+
 
 static void free_pair(Pair *p)
 {

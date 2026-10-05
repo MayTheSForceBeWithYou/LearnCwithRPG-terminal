@@ -1,13 +1,14 @@
 /*
  * Drill 01 — row-major offset
- * offset = y * width + x
+ * Calculate the serial memory offset given the row (y), the column (x) and the width of a row (width)
  */
 #include <stdio.h>
 enum { W = 10, H = 5 };
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO */
-static int offset(int x, int y, int width){ (void)x;(void)y;(void)width; return -1; }
+static int offset(int x, int y, int width);
+
 int main(void){
     check(offset(0,0,W)==0, "origin");
     check(offset(9,0,W)==9, "end of first row");

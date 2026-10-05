@@ -2,11 +2,9 @@
 
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-/* Simulate ask: accept first char of line; discard rest conceptually via index */
-static char first_of(const char *line)
-{
-    return '\0';
-}
+/* TODO: return the first character of the line */
+static char first_of(const char *line);
+
 int main(void)
 {
     check(first_of("hello\n")=='h', "first only");

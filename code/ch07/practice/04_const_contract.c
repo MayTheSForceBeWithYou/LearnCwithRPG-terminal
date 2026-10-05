@@ -1,13 +1,16 @@
 /*
- * Drill 04 — const contract (this file should COMPILE)
- * Uncomment the bad line in touch_bad to see the compiler reject it.
+ * Drill 04 — const contract
+ *
+ * The bad write through a const int * is left active on purpose so this
+ * file does not compile until you confront it. Read the error, then comment
+ * out the illegal assignment (keep the printf). Re-build; it should pass.
  */
 #include <stdio.h>
 
 static void touch_ok(const int *n)
 {
     printf("value=%d\n", *n);
-    /* *n = 1;  -- uncomment: should fail to compile */
+    *n = 1; /* TODO: comment this out after you read the compiler error */
 }
 
 static int identity(const int *n)

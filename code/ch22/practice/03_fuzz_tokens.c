@@ -3,11 +3,8 @@
 #include <ctype.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-/* Toy: accept lines "key = value" with spaces; reject garbage */
-static int parse_kv(const char *line, char *key, size_t ksz, char *val, size_t vsz)
-{
-    return sscanf(line, "%31s = %31[^\n]", key, val) == 2 && ksz && vsz;
-}
+/* TODO: accept "key = value" lines; reject garbage. Return 1 on success. */
+static int parse_kv(const char *line, char *key, size_t ksz, char *val, size_t vsz);
 int main(void)
 {
     char k[32], v[32];

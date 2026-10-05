@@ -6,10 +6,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO: write the smaller value to *out_min, larger to *out_max */
-static void minmax(int a, int b, int *out_min, int *out_max)
-{
-    (void)a; (void)b; (void)out_min; (void)out_max;
-}
+static void minmax(int a, int b, int *out_min, int *out_max);
+
 
 int main(void)
 {

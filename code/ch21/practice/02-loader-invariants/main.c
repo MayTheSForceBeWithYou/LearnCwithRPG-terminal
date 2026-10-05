@@ -11,40 +11,14 @@ static void check(int cond, const char *msg)
 {
     if (!cond) { fprintf(stderr, "FAIL: %s" "\n", msg); fails++; }
 }
-static int is_sorted_by_level(const SpellRow *rows, int n)
-{
-    if (!rows || n < 0) return 0;
-    for (int i = 1; i < n; i++) {
-        /* TODO1: if rows[i].level < rows[i-1].level return 0 */
-        (void)i;
-    }
-    return 0; /* TODO1: return 1 when sorted */
-}
-static int effect_known(const char *effect)
-{
-    if (!effect) return 0;
-    (void)KNOWN_EFFECTS;
-    return 0; /* TODO2 */
-}
-static int validate_table(const SpellRow *rows, int n, char *reason, size_t reason_size)
-{
-    if (reason_size) reason[0] = 0;
-    if (!rows || n < 0) return 0;
-    if (!is_sorted_by_level(rows, n)) return 0; /* TODO3: snprintf reason */
-    for (int i = 0; i < n; i++) {
-        if (!effect_known(rows[i].effect)) return 0; /* TODO3: snprintf reason */
-    }
-    return 1;
-}
-static int known_count_prefix(const SpellRow *rows, int n, int hero_level)
-{
-    int count = 0;
-    for (int i = 0; i < n; i++) {
-        if (rows[i].level > hero_level) break;
-        count++;
-    }
-    return count;
-}
+static int is_sorted_by_level(const SpellRow *rows, int n);
+
+static int effect_known(const char *effect);
+
+static int validate_table(const SpellRow *rows, int n, char *reason, size_t reason_size);
+
+static int known_count_prefix(const SpellRow *rows, int n, int hero_level);
+
 static int known_count_scan(const SpellRow *rows, int n, int hero_level)
 {
     int count = 0;

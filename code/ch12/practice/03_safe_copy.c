@@ -3,10 +3,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: copy src into dst[dst_sz], always NUL-terminate, never overflow */
-static void safe_copy(char *dst, size_t dst_sz, const char *src)
-{
-    (void)dst;(void)dst_sz;(void)src;
-}
+static void safe_copy(char *dst, size_t dst_sz, const char *src);
+
 int main(void)
 {
     char buf[8];

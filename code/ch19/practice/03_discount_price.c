@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: base price with optional 10% off (integer); display AND charge use this */
-static int entry_price(int base, int has_signet)
-{
-    (void)base;(void)has_signet; return 0;
-}
+static int entry_price(int base, int has_signet);
+
 int main(void)
 {
     check(entry_price(100, 0)==100, "full");

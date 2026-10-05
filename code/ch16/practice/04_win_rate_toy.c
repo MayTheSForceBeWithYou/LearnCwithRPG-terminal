@@ -10,14 +10,8 @@ static uint32_t rng_next(Rng *r)
 /* Toy fight: hero wins if rng%100 < win_pct */
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static double win_rate(int win_pct, int trials, uint32_t seed)
-{
-    Rng r = { seed };
-    int wins = 0;
-    for (int i = 0; i < trials; i++)
-        if ((int)(rng_next(&r) % 100u) < win_pct) wins++;
-    return (double)wins / (double)trials;
-}
+/* TODO: run `trials` fights; return wins/trials as double */
+static double win_rate(int win_pct, int trials, uint32_t seed);
 int main(void)
 {
     double a = win_rate(50, 2000, 42u);

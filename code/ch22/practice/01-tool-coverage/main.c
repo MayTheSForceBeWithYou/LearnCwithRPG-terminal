@@ -22,10 +22,8 @@ static Hero buggy_create(void)
     return h;
 }
 
-static int read_ready(Hero h)
-{
-    return h.ready != 0; /* uses the field — like party clamps on hp */
-}
+static int read_ready(Hero h);
+
 
 /* Simulates make valgrind / run_tests — never calls buggy_create. */
 static int test_suite_path(void)

@@ -5,10 +5,8 @@ typedef struct { Stack s[MAX]; int count; } Inv;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: remove one from index; if qty hits 0 shift later down */
-static int remove_at_shift(Inv *inv, int index)
-{
-    (void)inv;(void)index; return 0;
-}
+static int remove_at_shift(Inv *inv, int index);
+
 int main(void)
 {
     Inv inv = { .count = 3, .s = { {1,1},{2,1},{3,1} } };

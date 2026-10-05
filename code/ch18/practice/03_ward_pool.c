@@ -3,10 +3,8 @@ typedef struct { int ward_left; } Fighter;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: absorb up to ward_left from damage; return hp loss; reduce ward */
-static int apply_hit(Fighter *f, int damage)
-{
-    (void)f;(void)damage; return -1;
-}
+static int apply_hit(Fighter *f, int damage);
+
 int main(void)
 {
     Fighter f = { .ward_left = 80 };

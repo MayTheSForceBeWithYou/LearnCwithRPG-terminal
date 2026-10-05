@@ -3,7 +3,11 @@
 #include <stdarg.h>
 
 static void log_linef(const char *fmt, ...)
-    __attribute__((format(printf, 1, 2)));
+#if defined(__GNUC__)
+    /* TODO: replace FORMAT_ATTR_ARGS with (printf, 1, 2) */
+    __attribute__((format FORMAT_ATTR_ARGS))
+#endif
+;
 
 static void log_linef(const char *fmt, ...)
 {

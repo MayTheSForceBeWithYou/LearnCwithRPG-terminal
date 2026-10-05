@@ -8,16 +8,8 @@ static void check(int cond, const char *msg)
     if (!cond) { fprintf(stderr, "FAIL: %s" "\n", msg); fails++; }
 }
 
-static int base_damage(int atk, int defense, int level)
-{
-    int base = atk + level / 2 - defense;
-#ifndef DEMO_BAD_FLOOR
-    if (base < 1) base = 1; /* lasting floor — keep in production */
-#endif
-    /* TODO1: assert(base >= 1); */
-    (void)base;
-    return base;
-}
+static int base_damage(int atk, int defense, int level);
+
 
 int main(void)
 {

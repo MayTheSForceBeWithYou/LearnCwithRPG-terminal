@@ -20,34 +20,14 @@ static int clamp(int value, int low, int high)
     return value;
 }
 
-static void cam_center_raw(int tx, int ty, int *cx, int *cy)
-{
-    /* TODO 1: replace the zeros with tx - VIEW_WIDTH/2 and ty - VIEW_HEIGHT/2.
-       Leave unclamped — negative values are the point of this column. */
-    *cx = 0; /* TODO: tx - VIEW_WIDTH / 2 */
-    *cy = 0; /* TODO: ty - VIEW_HEIGHT / 2 */
-    (void)tx;
-    (void)ty;
-}
+static void cam_center_raw(int tx, int ty, int *cx, int *cy);
 
-static void cam_page(int tx, int ty, int *cx, int *cy)
-{
-    /* TODO 2: (tx / VIEW_WIDTH) * VIEW_WIDTH, same for y. */
-    *cx = 0; /* TODO */
-    *cy = 0; /* TODO */
-    (void)tx;
-    (void)ty;
-}
 
-static void cam_center_clamped(int tx, int ty, int *cx, int *cy)
-{
-    /* TODO 3: clamp(tx - VIEW_WIDTH/2, 0, MAP_WIDTH - VIEW_WIDTH), y twin.
-       Starter returns 0,0 so only the corner sample looks accidentally right. */
-    *cx = clamp(0, 0, MAP_WIDTH - VIEW_WIDTH); /* TODO: use tx formula */
-    *cy = clamp(0, 0, MAP_HEIGHT - VIEW_HEIGHT); /* TODO: use ty formula */
-    (void)tx;
-    (void)ty;
-}
+static void cam_page(int tx, int ty, int *cx, int *cy);
+
+
+static void cam_center_clamped(int tx, int ty, int *cx, int *cy);
+
 
 static int viewport_legal(int cx, int cy)
 {

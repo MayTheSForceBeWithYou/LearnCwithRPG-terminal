@@ -14,16 +14,11 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO: allocate ToyMap + tiles filled with '.'; border not required */
-static ToyMap *toymap_create(int w, int h)
-{
-    (void)w; (void)h;
-    return NULL;
-}
+static ToyMap *toymap_create(int w, int h);
 
-static void toymap_destroy(ToyMap *m)
-{
-    (void)m;
-}
+
+static void toymap_destroy(ToyMap *m);
+
 
 int main(void)
 {

@@ -4,10 +4,8 @@ typedef struct { int used; int slots[MAX]; } Bag;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: append if used < MAX; return 1 ok / 0 full. Loop only to used. */
-static int bag_add(Bag *b, int v)
-{
-    (void)b;(void)v; return 0;
-}
+static int bag_add(Bag *b, int v);
+
 int main(void)
 {
     Bag b = {0};

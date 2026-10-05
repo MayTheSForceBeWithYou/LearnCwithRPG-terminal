@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: damage = attack - defense/2, floor at 1 */
-static int base_damage(int atk, int def)
-{
-    (void)atk;(void)def; return 0;
-}
+static int base_damage(int atk, int def);
+
 int main(void)
 {
     check(base_damage(10, 0) == 10, "no def");

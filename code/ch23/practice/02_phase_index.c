@@ -5,10 +5,8 @@ static const char *lines[PHASE_COUNT] = { "one", "two", "three" };
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: clamp phase into [0, PHASE_COUNT) */
-static const char *phase_line(int phase)
-{
-    (void)phase; return "";
-}
+static const char *phase_line(int phase);
+
 int main(void)
 {
     check(strcmp(phase_line(0), "one")==0, "0");

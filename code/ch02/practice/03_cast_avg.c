@@ -2,10 +2,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: return (attack + defense) / 2.0f  — cast so division is float */
-static float power(int attack, int defense)
-{
-    (void)attack;(void)defense; return 0.0f;
-}
+static float power(int attack, int defense);
+
 int main(void)
 {
     /* 5+4 = 9; /2 as int would be 4; float avg 4.5 */

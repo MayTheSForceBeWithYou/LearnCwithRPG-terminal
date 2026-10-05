@@ -4,7 +4,8 @@
 int main(void)
 {
     int x = 1;
-    assert(x == 1);
+    /* TODO: assert a true condition about x, then print the pass line */
+    assert(NDEBUG_PROOF);
     puts("02_ndebug_toy: all checks passed");
     return 0;
 }

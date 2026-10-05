@@ -3,33 +3,10 @@
 typedef struct { int hp; int gold; } Blob;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static int write_blob(const char *path, const Blob *b)
-{
-    FILE *f = fopen(path, "w");
-    if (!f) return 0;
-    fprintf(f, "version 1\n");
-    fprintf(f, "hp %d\n", b->hp);
-    fprintf(f, "gold %d\n", b->gold);
-    fclose(f);
-    return 1;
-}
-static int read_blob(const char *path, Blob *b)
-{
-    FILE *f = fopen(path, "r");
-    if (!f) return 0;
-    char key[32]; int val, ver=-1;
-    Blob tmp = {0};
-    while (fscanf(f, "%31s %d", key, &val) == 2) {
-        if (strcmp(key, "version")==0) ver = val;
-        else if (strcmp(key, "hp")==0) tmp.hp = val;
-        else if (strcmp(key, "gold")==0) tmp.gold = val;
-        else { fclose(f); return 0; }
-    }
-    fclose(f);
-    if (ver != 1) return 0;
-    *b = tmp;
-    return 1;
-}
+/* TODO: write version/hp/gold text lines */
+static int write_blob(const char *path, const Blob *b);
+/* TODO: read them back; refuse unknown keys / bad version */
+static int read_blob(const char *path, Blob *b);
 int main(void)
 {
     Blob a = {20, 150}, b = {0};

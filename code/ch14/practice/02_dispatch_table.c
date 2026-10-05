@@ -6,7 +6,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)
 {
-    Op table[] = { add, sub };
+    /* TODO: a two-entry table of Op — add then sub */
+    Op table[] = TABLE_INIT;
     check(table[0](10,3)==13, "add idx");
     check(table[1](10,3)==7, "sub idx");
     if (fails) { fprintf(stderr, "%d failed\n", fails); return 1; }

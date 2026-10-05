@@ -1,5 +1,7 @@
 #include <stdio.h>
-typedef struct { int x, y; int gold; } Player;
+/* TODO: declare the fields the designated initializer and checks below need */
+typedef struct {
+} Player;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)

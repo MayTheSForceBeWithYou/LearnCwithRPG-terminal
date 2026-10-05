@@ -11,9 +11,8 @@ static const char map[H][W+1] = {
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: return 1 if found, writing *out_x,*out_y; else 0 */
-static int find_tile(char needle, int *out_x, int *out_y){
-    (void)needle;(void)out_x;(void)out_y; return 0;
-}
+static int find_tile(char needle, int *out_x, int *out_y);
+
 int main(void){
     int x=-1,y=-1;
     check(find_tile('@', &x, &y)==1, "found");

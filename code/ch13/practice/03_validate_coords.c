@@ -9,10 +9,8 @@ static int walkable(int x, int y)
     return map[y][x] != '#';
 }
 /* TODO: return number of bad coords among npcs */
-static int count_bad(int (*xy)[2], int n)
-{
-    (void)xy;(void)n; return -1;
-}
+static int count_bad(int (*xy)[2], int n);
+
 int main(void)
 {
     int ok[][2] = { {1,1}, {2,1} };

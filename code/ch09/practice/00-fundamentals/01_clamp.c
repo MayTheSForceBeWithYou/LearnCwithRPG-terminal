@@ -1,8 +1,7 @@
 /*
  * Drill 01 — clamp
  *
- * Implement clamp(). Fill in the TODO tests' expected values by reasoning
- * first, then run. When every CHECK passes, you are done.
+ * Implement clamp(). When every CHECK passes, you are done.
  *
  * Build:  gcc -std=c17 -Wall -Wextra -Wpedantic -o 01_clamp 01_clamp.c
  * Run:    ./01_clamp
@@ -24,14 +23,7 @@ static void check(int cond, const char *msg)
  * Precondition for this drill: low <= high.
  * If value < low return low; if value > high return high; else value.
  */
-static int clamp(int value, int low, int high)
-{
-    (void)value;
-    (void)low;
-    (void)high;
-    /* replace this stub */
-    return 0;
-}
+static int clamp(int value, int low, int high);
 
 int main(void)
 {

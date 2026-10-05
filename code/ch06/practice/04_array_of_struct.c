@@ -4,7 +4,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)
 {
-    Member party[3] = { {20}, {15}, {10} };
+    /* TODO: replace PARTY_INIT with an initializer for hp 20, 15, 10 */
+    Member party[3] = PARTY_INIT;
     int sum = 0;
     for (int i = 0; i < 3; i++) sum += party[i].hp;
     check(sum == 45, "party hp");

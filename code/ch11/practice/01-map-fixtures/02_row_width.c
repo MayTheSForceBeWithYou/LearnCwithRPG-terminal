@@ -3,8 +3,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO */
-static int row_ok(const char *line, int expect)
-{ (void)line;(void)expect; return 0; }
+static int row_ok(const char *line, int expect);
+
 int main(void){
     check(row_ok("###\n", 3)==1, "ok");
     check(row_ok("##\n", 3)==0, "short");

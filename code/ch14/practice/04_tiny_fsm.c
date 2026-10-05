@@ -12,12 +12,8 @@ static void menu_h(Game *g, int key)
     if (key == 'w') g->state = ST_WALK;
     if (key == 'q') g->state = ST_QUIT;
 }
-static void walk_h(Game *g, int key)
-{
-    if (key == 'm') g->state = ST_MENU;
-    else if (key == 'q') g->state = ST_QUIT;
-    else g->steps++;
-}
+/* TODO: implement walk transitions (m->menu, q->quit, else steps++) */
+static void walk_h(Game *g, int key);
 static void quit_h(Game *g, int key){ (void)g;(void)key; }
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }

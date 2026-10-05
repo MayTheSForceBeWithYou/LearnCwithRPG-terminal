@@ -3,10 +3,8 @@ typedef struct { int x, y; const char *speech; } Npc;
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: return index or -1 */
-static int npc_at(const Npc *npcs, int count, int x, int y)
-{
-    (void)npcs;(void)count;(void)x;(void)y; return -2;
-}
+static int npc_at(const Npc *npcs, int count, int x, int y);
+
 int main(void)
 {
     Npc npcs[] = { {1,2,"a"}, {5,5,"b"}, {9,1,"c"} };

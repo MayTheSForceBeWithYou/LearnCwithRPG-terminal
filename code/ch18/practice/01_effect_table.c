@@ -6,7 +6,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)
 {
-    Effect table[] = { heal, harm };
+    /* TODO: table of Effect — heal then harm */
+    Effect table[] = EFFECT_TABLE_INIT;
     int hp = 10;
     table[0](&hp, 5);
     check(hp == 15, "heal");

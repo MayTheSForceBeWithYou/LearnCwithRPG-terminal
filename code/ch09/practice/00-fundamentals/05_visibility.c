@@ -22,14 +22,8 @@ static void check(int cond, const char *msg)
 }
 
 /* TODO */
-static int camera_is_on_screen(int cam_x, int cam_y, int world_x, int world_y)
-{
-    (void)cam_x;
-    (void)cam_y;
-    (void)world_x;
-    (void)world_y;
-    return 0;
-}
+static int camera_is_on_screen(int cam_x, int cam_y, int world_x, int world_y);
+
 
 int main(void)
 {

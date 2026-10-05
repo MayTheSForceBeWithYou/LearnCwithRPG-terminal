@@ -9,11 +9,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 
 /* TODO: grow *buf to at least new_cap ints; update *cap; return 1 ok / 0 fail */
-static int grow(int **buf, int *cap, int new_cap)
-{
-    (void)buf; (void)cap; (void)new_cap;
-    return 0;
-}
+static int grow(int **buf, int *cap, int new_cap);
+
 
 int main(void)
 {

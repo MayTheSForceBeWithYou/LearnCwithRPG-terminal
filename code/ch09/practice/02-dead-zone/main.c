@@ -40,17 +40,8 @@ static void camera_center_on(Camera *cam, int target_x, int target_y)
  * Update camera in place. Only move the camera when the player's
  * screen-space position would leave the dead-zone box.
  */
-static void camera_update_dead_zone(Camera *cam, int world_x, int world_y)
-{
-    /* TODO: use screen_x / screen_y to push cam when outside margins,
-       then clamp. Starter only recomputes screen positions (no-op). */
-    int screen_x = world_x - cam->x;
-    int screen_y = world_y - cam->y;
-    (void)screen_x;
-    (void)screen_y;
-    (void)clamp;
-    /* cam unchanged until you fill the push/clamp logic */
-}
+static void camera_update_dead_zone(Camera *cam, int world_x, int world_y);
+
 
 static void print_step(int step, int px, int py, const Camera *cam)
 {

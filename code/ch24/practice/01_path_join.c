@@ -2,10 +2,8 @@
 #include <string.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-static void join(char *dst, size_t n, const char *dir, const char *file)
-{
-    snprintf(dst, n, "%s/%s", dir, file);
-}
+/* TODO: write dir/file into dst with snprintf */
+static void join(char *dst, size_t n, const char *dir, const char *file);
 int main(void)
 {
     char buf[64];

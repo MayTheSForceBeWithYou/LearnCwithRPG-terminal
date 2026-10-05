@@ -5,7 +5,8 @@
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 /* TODO: if len<=0 return 0; else clamp i into [0, len-1] */
-static int clamp_index(int i, int len){ (void)i;(void)len; return -999; }
+static int clamp_index(int i, int len);
+
 int main(void){
     check(clamp_index(3, 10)==3, "inside");
     check(clamp_index(-1, 10)==0, "below");

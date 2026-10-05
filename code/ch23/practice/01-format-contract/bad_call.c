@@ -1,4 +1,7 @@
-/* Intentional bad call — used by make bad. Not linked into the game. */
+/* Intentional bad call — used by make bad. Not linked into the game.
+ * Unworked gate: remove the #error after you read TASK.md, then run `make bad`.
+ */
+#error "Read TASK.md / LESSON.md, then remove this #error and run: make bad"
 #include <stdio.h>
 #include <stdarg.h>
 

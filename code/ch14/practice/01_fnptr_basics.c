@@ -5,7 +5,8 @@ static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
 int main(void)
 {
-    int (*op)(int,int) = add;
+    /* TODO: declare a function pointer named op and point it at add, then mul */
+    OP_DECL;
     check(op(2,3)==5, "add");
     op = mul;
     check(op(2,3)==6, "mul");

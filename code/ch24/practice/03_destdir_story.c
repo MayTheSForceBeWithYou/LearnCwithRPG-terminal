@@ -2,11 +2,8 @@
 #include <string.h>
 static int fails;
 static void check(int c, const char *m){ if(!c){ fprintf(stderr,"FAIL: %s\n",m); fails++; } }
-/* DESTDIR is staging only — runtime prefix is PREFIX */
-static void staged_path(char *dst, size_t n, const char *destdir, const char *prefix, const char *rel)
-{
-    snprintf(dst, n, "%s%s/%s", destdir, prefix, rel);
-}
+/* TODO: DESTDIR is staging only — join destdir + prefix + rel */
+static void staged_path(char *dst, size_t n, const char *destdir, const char *prefix, const char *rel);
 int main(void)
 {
     char buf[128];
